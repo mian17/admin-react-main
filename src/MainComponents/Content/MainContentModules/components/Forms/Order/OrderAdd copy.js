@@ -1,72 +1,55 @@
-import { useFormik } from "formik";
+import { useState, useEffect } from "react";
+import useInput from "../../../../../../hooks/use-input";
+// import { useFormik } from "formik";
 
 const WAREHOUSES = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khánh Hòa"];
 const SELLERS = ["Nguyễn Văn A", "Nguyễn Thị B", "Trần Đình C", "Ngô Đỗ Thị D"];
 
 // REGEXES
 const ID_REGEX = /^\d{9}$/;
-
 const VIETNAMESE_REGEX =
   /\b\S*[AĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴA-Z]+\S*\b/;
 const NO_NUM_REGEX = /^(\D*)$/;
 const MONEY_REGEX = /^\d*$/;
 
-const makeId = (length) => {
-  let result = "";
-  const characters = "0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-
-const validate = (values) => {
-  const errors = {};
-
-  // orderAddId
-  if (!values.orderAddId) {
-    errors.orderAddId = "Hệ thống sự tự động thêm mã mới";
-  } else if (!ID_REGEX.test(values.orderAddId)) {
-    errors.orderAddId = "Mã đơn hàng phải có 9 chữ số";
-  }
-
-  // orderAddCustomerName
-  if (!values.orderAddCustomerName) {
-    errors.orderAddCustomerName = "Chưa nhập tên khách hàng.";
-  } else if (values.orderAddCustomerName.length < 6) {
-    errors.orderAddCustomerName =
-      "Tên khách hàng phải trên 6 ký tự, bao gồm khoảng trống.";
-  } else if (
-    !VIETNAMESE_REGEX.test(values.orderAddCustomerName) &&
-    values.orderAddCustomerName.length >= 6
-  ) {
-    errors.orderAddCustomerName =
-      "Tên khách hàng không được bao gồm số, ký tự đặc biệt và phải viết in hoa.";
-  }
-
-  return errors;
+const checkViName = (value) => {
+  return VIETNAMESE_REGEX.test(value) && value.trim() !== "";
 };
 
 // COMPONENT'S FUNCTION
 const OrderAdd = (props) => {
-  const formik = useFormik({
-    initialValues: {
-      orderAddId: `${makeId(9)}`,
-      orderAddCustomerName: "",
-    },
-    validate,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
-    },
-  });
+  const {
+    value: customerNameInput,
+    isValid: customerNameIsValid,
+    hasError: customerNameHasError,
+    errorMessage: customerNameErrorMessage,
+    changeValueHandler: changeCustomerNameHandler,
+    blurValueHandler: blurCustomerNameHandler,
+  } = useInput(checkViName);
 
-  // const customerInputClasses = customerNameHasError
-  //   ? "form-control is-invalid"
-  //   : "form-control";
+  // const [errorMessage, setErrorMessage] = useState("");
+  // useEffect(() => {
+  //   if (customerNameInput.trim() === "")
+  //     setErrorMessage("Chưa nhập tên khách hàng");
+  //   if (
+  //     !VIETNAMESE_REGEX.test(customerNameInput) &&
+  //     customerNameInput.trim() !== ""
+  //   )
+  //     setErrorMessage(
+  //       "Tên khách hàng không được bao gồm số, ký tự đặc biệt và phải viết in hoa."
+  //     );
   //
-  // let formIsValid = false;
-  // formIsValid = customerNameIsValid;
+  //   return () => {};
+  // }, [errorMessage, customerNameInput, setErrorMessage]);
+  //
+  // console.log(customerNameIsValid);
+
+  const customerInputClasses = customerNameHasError
+    ? "form-control is-invalid"
+    : "form-control";
+
+  let formIsValid = false;
+  formIsValid = customerNameIsValid;
 
   return (
     <div className="card card-primary">
@@ -74,27 +57,21 @@ const OrderAdd = (props) => {
         <h3 className="card-title">Tạo đơn hàng</h3>
       </div>
 
-      <form onSubmit={formik.handleSubmit}>
+      <form>
         <div className="card-body">
           <div className="row">
             <div className="col-6">
               <div className="form-group">
-                <label htmlFor="orderAddId">Mã đơn hàng</label>
+                <label htmlFor="product-id">Mã đơn hàng</label>
                 <input
                   type="text"
                   className="form-control"
-                  id="orderAddId"
+                  id="product-id"
                   placeholder="Nếu không nhập, hệ thống sẽ tự thêm"
-                  name="orderAddId"
-                  value={formik.values.orderAddId}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                  name="id"
+                  // onChange={changeIdHandler}
+                  // onBlur={validateIdHandler}
                 />
-                {formik.errors.orderAddId && formik.touched.orderAddId ? (
-                  <div className="text-red mt-1 ml-1">
-                    {formik.errors.orderAddId}
-                  </div>
-                ) : null}
               </div>
               <div className="form-group">
                 <label>Kho xuất</label>
@@ -126,24 +103,20 @@ const OrderAdd = (props) => {
             </div>
             <div className="col-6">
               <div className="form-group">
-                <label htmlFor="orderAddCustomerName">Khách hàng</label>
+                <label htmlFor="customer-order-form-name">Khách hàng</label>
                 <input
-                  className="form-control"
-                  id="orderAddCustomerName"
-                  name="orderAddCustomerName"
                   type="text"
+                  className={customerInputClasses}
+                  id="customer-order-form-name"
                   placeholder="Nhập tên khách hàng"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.orderAddCustomerName}
+                  name="customer"
+                  value={customerNameInput}
+                  onChange={changeCustomerNameHandler}
+                  onBlur={blurCustomerNameHandler}
                 />
-
-                {formik.errors.orderAddCustomerName &&
-                formik.touched.orderAddCustomerName ? (
-                  <div className="text-red mt-1 ml-1">
-                    {formik.errors.orderAddCustomerName}
-                  </div>
-                ) : null}
+                <div className="invalid-feedback">
+                  {customerNameErrorMessage}
+                </div>
               </div>
 
               <div className="form-group">
@@ -194,8 +167,9 @@ const OrderAdd = (props) => {
         <div className="card-footer">
           <button
             // onClick={addOrderHandler}
-            type="submit"
+            type="button"
             className="btn btn-primary float-right"
+            disabled={!formIsValid}
           >
             Thêm đơn hàng
           </button>
