@@ -1,3 +1,10 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCopy,
+  faPenToSquare,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+
 const CardOrdersTable = (props) => {
   console.log("Re RENDERED");
 
@@ -18,6 +25,7 @@ const CardOrdersTable = (props) => {
               <th>Khách hàng</th>
               <th>Trạng thái</th>
               <th>Tổng tiền</th>
+              <th>Tính năng</th>
             </tr>
           </thead>
           <tbody>
@@ -33,7 +41,7 @@ const CardOrdersTable = (props) => {
 
             {props.tableItems.length === 0 && (
               <tr>
-                <td style={{ textAlign: "center" }} colSpan={7}>
+                <td style={{ textAlign: "center" }} colSpan={8}>
                   Không có dữ liệu
                 </td>
               </tr>
@@ -79,6 +87,27 @@ const CardOrdersTable = (props) => {
                     <td>{orderCustomerName}</td>
                     <td>{orderStatus}</td>
                     <td>{orderTotalMoney + " VNĐ"}</td>
+                    <td>
+                      <div>
+                        <FontAwesomeIcon
+                          className="mr-2"
+                          style={{ cursor: "pointer" }}
+                          icon={faCopy}
+                        />
+                        <FontAwesomeIcon
+                          className="mr-2"
+                          style={{ cursor: "pointer" }}
+                          icon={faTrash}
+                          color="red"
+                        />
+                        <FontAwesomeIcon
+                          className="mr-2"
+                          style={{ cursor: "pointer" }}
+                          icon={faPenToSquare}
+                          color="green"
+                        />
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -92,6 +121,7 @@ const CardOrdersTable = (props) => {
               <th>Khách hàng</th>
               <th>Trạng thái</th>
               <th>Tổng tiền</th>
+              <th>Tính năng</th>
             </tr>
           </tfoot>
         </table>
