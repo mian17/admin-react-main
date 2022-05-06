@@ -97,14 +97,14 @@ const CardOrdersTable = (props) => {
                         <FontAwesomeIcon
                           className="mr-2"
                           style={{ cursor: "pointer" }}
-                          icon={faTrash}
-                          color="red"
+                          icon={faPenToSquare}
+                          color="green"
                         />
                         <FontAwesomeIcon
                           className="mr-2"
                           style={{ cursor: "pointer" }}
-                          icon={faPenToSquare}
-                          color="green"
+                          icon={faTrash}
+                          color="red"
                         />
                       </div>
                     </td>
