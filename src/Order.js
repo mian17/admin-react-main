@@ -7,9 +7,14 @@ const Order = () => {
   const [ordersToAdd, setOrdersToAdd] = useState([]);
 
   const addOrderHandler = (order) => {
+    // If check if Id is already in ordersToAdd Array
+    if (ordersToAdd.some((el) => el.orderAddId === order.orderAddId)) {
+      console.log("Id must be different");
+      return;
+    }
     setOrdersToAdd((prevState) => [...prevState, order]);
   };
-
+  console.log(ordersToAdd);
   return (
     <>
       <section className="col-lg-12">

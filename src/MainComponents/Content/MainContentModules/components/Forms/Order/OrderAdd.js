@@ -1,5 +1,11 @@
 import { useFormik } from "formik";
 
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import vi from "date-fns/locale/vi";
+
+registerLocale("vi", vi);
+
 const WAREHOUSES = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khánh Hòa"];
 const SELLERS = ["Nguyễn Văn A", "Nguyễn Thị B", "Trần Đình C", "Ngô Đỗ Thị D"];
 
@@ -10,6 +16,8 @@ const VIETNAMESE_REGEX =
   /\b\S*[AĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴAĂÂÁẮẤÀẰẦẢẲẨÃẴẪẠẶẬĐEÊÉẾÈỀẺỂẼỄẸỆIÍÌỈĨỊOÔƠÓỐỚÒỒỜỎỔỞÕỖỠỌỘỢUƯÚỨÙỪỦỬŨỮỤỰYÝỲỶỸỴA-Z]+\S*\b/;
 const NO_NUM_REGEX = /^(\D*)$/;
 const MONEY_REGEX = /^\d*$/;
+const DATE_TIME_VI_REGEX =
+  /(0[1-9]|[1-2]\d|3[0-1])\/(0[1-9]|1[0-2])\/\d{4} (2[0-3]|[01]\d):[0-5]\d/;
 
 const makeId = (length) => {
   let result = "";
@@ -26,9 +34,31 @@ const validate = (values) => {
 
   // orderAddId
   if (!values.orderAddId) {
-    errors.orderAddId = "Hệ thống sự tự động thêm mã mới";
+    errors.orderAddId = "Chưa nhập mã đơn hàng";
   } else if (!ID_REGEX.test(values.orderAddId)) {
-    errors.orderAddId = "Mã đơn hàng phải có 9 chữ số";
+    errors.orderAddId =
+      "Mã đơn hàng phải có 9 chữ số và không bao gồm chữ cái, khoảng trống.";
+  }
+
+  // orderAddWarehouse
+  if (!values.orderAddWarehouse) {
+    errors.orderAddWarehouse = "Vui lòng chọn kho.";
+  } else if (values.orderAddSeller.length < 6) {
+    errors.orderAddSeller =
+      "Tên thu ngân phải trên 6 ký tự, bao gồm khoảng trống.";
+  } else if (!WAREHOUSES.includes(values.orderAddWarehouse)) {
+    errors.orderAddWarehouse = "Kho bạn chọn không nằm trong danh sách kho.";
+  }
+
+  // orderAddSeller
+  if (!values.orderAddSeller) {
+    errors.orderAddSeller = "Vui lòng chọn thu ngân.";
+  } else if (values.orderAddSeller.length < 6) {
+    errors.orderAddSeller =
+      "Tên thu ngân phải trên 6 ký tự, bao gồm khoảng trống.";
+  } else if (!SELLERS.includes(values.orderAddSeller)) {
+    errors.orderAddSeller =
+      "Người bạn chọn không nằm trong danh sách thu ngân.";
   }
 
   // orderAddCustomerName
@@ -45,6 +75,19 @@ const validate = (values) => {
       "Tên khách hàng không được bao gồm số, ký tự đặc biệt và phải viết in hoa.";
   }
 
+  // orderAddDateTime
+  if (!values.orderAddDateTime) {
+    errors.orderAddDateTime = "Chưa nhập thời điểm bán đơn hàng";
+  } else if (!(values.orderAddDateTime instanceof Date)) {
+    errors.orderAddDateTime = "Dữ liệu nhập không có cấu trúc thời gian của JS";
+  }
+
+  // orderAddTotalMoney
+  if (!values.orderAddTotalMoney) {
+    errors.orderAddTotalMoney = "Chưa nhập tổng tiền của đơn hàng";
+  } else if (!MONEY_REGEX.test(values.orderAddTotalMoney)) {
+    errors.orderAddTotalMoney = "Tổng tiền phải là số và không có khoảng trống";
+  }
   return errors;
 };
 
@@ -52,21 +95,19 @@ const validate = (values) => {
 const OrderAdd = (props) => {
   const formik = useFormik({
     initialValues: {
-      orderAddId: `${makeId(9)}`,
+      orderAddId: makeId(9),
+      orderAddWarehouse: WAREHOUSES[0],
+      orderAddSeller: SELLERS[0],
       orderAddCustomerName: "",
+      orderAddDateTime: new Date(),
+      orderAddTotalMoney: 1000,
+      orderAddStatus: "Chờ xác nhận đơn",
     },
     validate,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: (order) => {
+      props.onClick(order);
     },
   });
-
-  // const customerInputClasses = customerNameHasError
-  //   ? "form-control is-invalid"
-  //   : "form-control";
-  //
-  // let formIsValid = false;
-  // formIsValid = customerNameIsValid;
 
   return (
     <div className="card card-primary">
@@ -100,28 +141,44 @@ const OrderAdd = (props) => {
                 <label>Kho xuất</label>
                 <select
                   className="custom-select"
-                  name="warehouse"
-                  // onChange={changeWarehouseHandler}
-                  // onBlur={validateWarehouseHandler}
+                  name="orderAddWarehouse"
+                  id="orderAddWarehouse"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.orderAddWarehouse}
                 >
                   {WAREHOUSES.map((warehouse, i) => {
                     return <option key={i}>{warehouse}</option>;
                   })}
                 </select>
+                {formik.errors.orderAddWarehouse &&
+                formik.touched.orderAddWarehouse ? (
+                  <div className="text-red mt-1 ml-1">
+                    {formik.errors.orderAddWarehouse}
+                  </div>
+                ) : null}
               </div>
 
               <div className="form-group">
                 <label>Thu ngân</label>
                 <select
                   className="custom-select"
-                  name="seller"
-                  // onChange={changeSellerHandler}
-                  // onBlur={validateSellerHandler}
+                  name="orderAddSeller"
+                  id="orderAddSeller"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.orderAddSeller}
                 >
                   {SELLERS.map((sellerName, i) => {
                     return <option key={sellerName[i]}>{sellerName}</option>;
                   })}
                 </select>
+                {formik.errors.orderAddSeller &&
+                formik.touched.orderAddSeller ? (
+                  <div className="text-red mt-1 ml-1">
+                    {formik.errors.orderAddSeller}
+                  </div>
+                ) : null}
               </div>
             </div>
             <div className="col-6">
@@ -147,45 +204,55 @@ const OrderAdd = (props) => {
               </div>
 
               <div className="form-group">
-                <label>Thời điểm bán:</label>
+                <label htmlFor="orderAddDateTime">Thời điểm bán:</label>
                 {/*// NEEDS TO FIX DATE TIME*/}
-                {/*<DatePicker className="input-group date" />*/}
-                <div
-                  className="input-group date"
-                  id="order-add-form-date"
-                  data-target-input="nearest"
-                  // onBlur={blurDateTimeHandler}
-                >
-                  <input
-                    type="text"
-                    className="form-control datetimepicker-input"
-                    data-target="#order-add-form-date"
-                    name="dateTime"
-                  />
-                  <div
-                    className="input-group-append"
-                    data-target="#order-add-form-date"
-                    data-toggle="datetimepicker"
-                  >
-                    <div className="input-group-text">
-                      <i className="fa fa-calendar"></i>
-                    </div>
+                <DatePicker
+                  name="orderAddDateTime"
+                  id="orderAddDateTime"
+                  className="form-control"
+                  selected={formik.values.orderAddDateTime}
+                  value={formik.values.orderAddDateTime}
+                  onChange={(date) =>
+                    formik.setFieldValue("orderAddDateTime", date)
+                  }
+                  onBlur={formik.handleBlur}
+                  locale={vi}
+                  dateFormat="dd/MM/yyyy hh:mm"
+                  timeCaption="Thời gian"
+                  timeIntervals={15}
+                  showTimeSelect
+                  maxDate={new Date()}
+                  onKeyDown={(e) => {
+                    e.preventDefault();
+                  }}
+                />
+                {formik.errors.orderAddDateTime &&
+                formik.touched.orderAddDateTime ? (
+                  <div className="text-red mt-1 ml-1">
+                    {formik.errors.orderAddDateTime}
                   </div>
-                </div>
+                ) : null}
               </div>
               <div className="form-group">
                 <label htmlFor="total-money">Tổng tiền</label>
                 <input
                   type="number"
                   className="form-control"
-                  id="total-money"
+                  id="orderAddTotalMoney"
+                  name="orderAddTotalMoney"
                   placeholder="0 VNĐ"
                   min="0"
                   step="1000"
-                  name="totalAmount"
-                  // onChange={changeTotalMoneyHandler}
-                  // onBlur={validateTotalMoneyHandler}
+                  value={formik.values.orderAddTotalMoney}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 />
+                {formik.errors.orderAddTotalMoney &&
+                formik.touched.orderAddTotalMoney ? (
+                  <div className="text-red mt-1 ml-1">
+                    {formik.errors.orderAddTotalMoney}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

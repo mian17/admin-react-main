@@ -1,15 +1,5 @@
-import { useState, useEffect } from "react";
-import OrderContext from "../../store/order-context";
-
 const CardOrdersTable = (props) => {
-  // const orderCtx = useContext(OrderContext);
-  // const orders = orderCtx.orders.slice();
-  // console.log(orders);
-
-  // const [data, setData] = useState(props.tableItems);
-
   console.log("Re RENDERED");
-  // useScript()
 
   return (
     <div className="card">
@@ -51,15 +41,44 @@ const CardOrdersTable = (props) => {
 
             {props.tableItems &&
               props.tableItems.map((order, i) => {
+                const {
+                  orderAddId: orderId,
+                  orderAddWarehouse: orderWarehouse,
+                  orderAddDateTime: orderDateTime,
+                  orderAddSeller: orderSeller,
+                  orderAddCustomerName: orderCustomerName,
+                  orderAddTotalMoney: orderTotalMoney,
+                  orderAddStatus: orderStatus,
+                } = order;
+
+                const dateOption = {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                };
+                let orderDate = orderDateTime.toLocaleDateString(
+                  "vi",
+                  dateOption
+                );
+
+                const timeOption = {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                };
+                let orderTime = orderDateTime.toLocaleTimeString(
+                  "vi",
+                  timeOption
+                );
+
                 return (
                   <tr key={i}>
-                    <td>{order.idValue}</td>
-                    <td>{order.warehouseValue}</td>
-                    <td>{order.dateTimeValue}</td>
-                    <td>{order.sellerValue}</td>
-                    <td>{order.customerValue}</td>
-                    <td>Xác nhận đơn</td>
-                    <td>{order.totalMoneyValue}</td>
+                    <td>{orderId}</td>
+                    <td>{orderWarehouse}</td>
+                    <td>{orderDate + " " + orderTime}</td>
+                    <td>{orderSeller}</td>
+                    <td>{orderCustomerName}</td>
+                    <td>{orderStatus}</td>
+                    <td>{orderTotalMoney + " VNĐ"}</td>
                   </tr>
                 );
               })}
