@@ -6,8 +6,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const CardOrdersTable = (props) => {
-  console.log("Re RENDERED");
-
   return (
     <div className="card">
       <div className="card-header bg-primary">
@@ -79,7 +77,7 @@ const CardOrdersTable = (props) => {
                 );
 
                 return (
-                  <tr key={i}>
+                  <tr key={i} data-id={i}>
                     <td>{orderId}</td>
                     <td>{orderWarehouse}</td>
                     <td>{orderDate + " " + orderTime}</td>
@@ -105,6 +103,7 @@ const CardOrdersTable = (props) => {
                           style={{ cursor: "pointer" }}
                           icon={faTrash}
                           color="red"
+                          onClick={props.onClickDeleteIcon}
                         />
                       </div>
                     </td>
