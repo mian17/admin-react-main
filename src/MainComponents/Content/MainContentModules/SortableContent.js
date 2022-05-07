@@ -14,8 +14,7 @@ import CardDashboardTable from "./components/CardDashboardTable/TableDashboardCo
 import CardSales from "./components/CardSales/CardSales";
 import CardTodo from "./components/CardTodo/CardTodo";
 
-// Context
-import Order from "../../../Order";
+import Order from "../../../pages/Order";
 
 // import LeftSortableContent from "./SortableContentModules/LeftSortableContent";
 // import RightSortableContent from "./SortableContentModules/RightSortableContent";

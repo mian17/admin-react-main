@@ -27,16 +27,6 @@ const CardOrdersTable = (props) => {
             </tr>
           </thead>
           <tbody>
-            {/*<tr>*/}
-            {/*  <td>000000001</td>*/}
-            {/*  <td>TP. Hồ Chí Minh</td>*/}
-            {/*  <td>24/5/2021 9:30</td>*/}
-            {/*  <td>Ngô Thị Đỗ</td>*/}
-            {/*  <td>Trần Văn Ninh</td>*/}
-            {/*  <td>Xác nhận đơn</td>*/}
-            {/*  <td>3.000.000 VNĐ</td>*/}
-            {/*</tr>*/}
-
             {props.tableItems.length === 0 && (
               <tr>
                 <td style={{ textAlign: "center" }} colSpan={8}>
