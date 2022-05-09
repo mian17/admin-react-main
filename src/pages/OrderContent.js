@@ -3,8 +3,9 @@ import { confirm } from "react-confirm-box";
 
 import OrderAdd from "../MainComponents/Content/MainContentModules/components/Forms/Order/OrderAdd";
 import CardOrdersTable from "../MainComponents/Content/MainContentModules/components/CardTable/CardOrdersTable/CardOrdersTable";
+import ContentHeader from "../MainComponents/Content/ContentHeader";
 
-const Order = () => {
+const OrderContent = () => {
   const [ordersToAdd, setOrdersToAdd] = useState([]);
 
   const addOrderHandler = (order) => {
@@ -42,16 +43,19 @@ const Order = () => {
 
   return (
     <>
-      <section className="col-lg-12">
-        <OrderAdd onClick={addOrderHandler} />
-      </section>
-      <section className="col-lg-12">
-        <CardOrdersTable
-          tableItems={ordersToAdd}
-          onClickDeleteIcon={deleteOrderHandler}
-        />
-      </section>
+      <div className="content-wrapper">
+        <ContentHeader name="Đơn hàng" />
+        <section className="col-lg-12">
+          <OrderAdd onClick={addOrderHandler} />
+        </section>
+        <section className="col-lg-12">
+          <CardOrdersTable
+            tableItems={ordersToAdd}
+            onClickDeleteIcon={deleteOrderHandler}
+          />
+        </section>
+      </div>
     </>
   );
 };
-export default Order;
+export default OrderContent;

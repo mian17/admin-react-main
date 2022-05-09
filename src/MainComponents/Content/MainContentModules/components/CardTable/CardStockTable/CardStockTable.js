@@ -3,7 +3,7 @@ const CardStockTable = () => {
   return (
     <div className="card">
       <div className="card-header bg-primary">
-        <h3 className="card-title">Danh sách sản phẩm</h3>
+        <h3 className="card-title">Danh sách sản phẩm trong kho</h3>
       </div>
 
       <div className="card-body">

@@ -3,16 +3,16 @@ import GeneralNavComponent from "./navigationComponents/GeneralNavComponent";
 // For icon please use Font Awesome 5 the free version
 // https://fontawesome.com/v5/search
 const generalComponents = [
-  { id: 0, icon: "fas fa-tachometer-alt", label: "Trang chủ" },
-  { id: 1, icon: "fas fa-shopping-cart", label: "Đơn hàng" },
-  { id: 2, icon: "fas fa-box", label: "Sản phẩm" },
-  { id: 3, icon: "fas fa-users", label: "Khách hàng" },
-  { id: 4, icon: "fas fa-truck", label: "Nhập kho" },
-  { id: 5, icon: "fas fa-warehouse", label: "Tồn kho" },
-  { id: 6, icon: "fas fa-truck-loading", label: "Doanh số" },
-  { id: 7, icon: "fas fa-file-alt", label: "Thu chi" },
-  { id: 8, icon: "fas fa-coins", label: "Lợi nhuận" },
-  { id: 9, icon: "fas fa-cog", label: "Thiết lập" },
+  { id: 0, icon: "fas fa-tachometer-alt", label: "Trang chủ", path: "/" },
+  { id: 1, icon: "fas fa-shopping-cart", label: "Đơn hàng", path: "/order" },
+  { id: 2, icon: "fas fa-box", label: "Sản phẩm", path: "/product" },
+  { id: 3, icon: "fas fa-users", label: "Khách hàng", path: "/customer" },
+  { id: 4, icon: "fas fa-truck", label: "Nhập kho", path: "/stock" },
+  // { id: 5, icon: "fas fa-warehouse", label: "Tồn kho" },
+  // { id: 6, icon: "fas fa-truck-loading", label: "Doanh số" },
+  // { id: 7, icon: "fas fa-file-alt", label: "Thu chi" },
+  // { id: 8, icon: "fas fa-coins", label: "Lợi nhuận" },
+  // { id: 9, icon: "fas fa-cog", label: "Thiết lập" },
 ];
 
 const NavigationModule = () => {
@@ -29,6 +29,7 @@ const NavigationModule = () => {
             key={component.id}
             icon={component.icon}
             label={component.label}
+            toForNavLink={component.path}
           />
         ))}
 

@@ -1,10 +1,12 @@
+import { NavLink } from "react-router-dom";
+
 const GeneralNavComponent = (props) => {
   return (
     <li className="nav-item">
-      <a href="index.html" className="nav-link">
+      <NavLink to={props.toForNavLink} className="nav-link">
         <i className={`nav-icon ${props.icon}`}></i>
         <p>{props.label}</p>
-      </a>
+      </NavLink>
     </li>
   );
 };

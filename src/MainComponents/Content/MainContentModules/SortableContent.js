@@ -1,20 +1,7 @@
 // Form
-import ProductAdd from "./components/Forms/Product/ProductAdd";
-
-import CustomerAdd from "./components/Forms/Customer/CustomerAdd";
-import StockAdd from "./components/Forms/Stock/StockAdd";
-
 // Table
-import CardProductsTable from "./components/CardTable/CardProductsTable/CardProductsTable";
-
-import CardCustomersTable from "./components/CardTable/CardCustomersTable/CardCustomersTable";
-import CardStockTable from "./components/CardTable/CardStockTable/CardStockTable";
 
 import CardDashboardTable from "./components/CardDashboardTable/TableDashboardContent";
-import CardSales from "./components/CardSales/CardSales";
-import CardTodo from "./components/CardTodo/CardTodo";
-
-import Order from "../../../pages/Order";
 
 // import LeftSortableContent from "./SortableContentModules/LeftSortableContent";
 // import RightSortableContent from "./SortableContentModules/RightSortableContent";
@@ -48,9 +35,6 @@ const dashboardTableData = [
 const SortableContent = () => {
   return (
     <div className="row">
-      {/* <LeftSortableContent /> */}
-      {/* <RightSortableContent /> */}
-
       {dashboardTableData.map((data) => (
         <section key={data.id} className="col-lg-4">
           <CardDashboardTable
@@ -62,36 +46,6 @@ const SortableContent = () => {
           />
         </section>
       ))}
-
-      <section className="col-lg-6">
-        <CardSales />
-      </section>
-      <section className="col-lg-6">
-        <CardTodo />
-      </section>
-
-      <section className="col-lg-12">
-        <ProductAdd />
-      </section>
-      <section className="col-lg-12">
-        <CardProductsTable />
-      </section>
-
-      <Order />
-
-      <section className="col-lg-12">
-        <CustomerAdd />
-      </section>
-      <section className="col-lg-12">
-        <CardCustomersTable />
-      </section>
-
-      <section className="col-lg-12">
-        <StockAdd />
-      </section>
-      <section className="col-lg-12">
-        <CardStockTable />
-      </section>
     </div>
   );
 };
