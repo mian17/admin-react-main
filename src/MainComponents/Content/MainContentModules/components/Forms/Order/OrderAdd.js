@@ -97,11 +97,11 @@ const OrderAdd = (props) => {
     initialValues: {
       orderAddId: makeId(9),
       orderAddWarehouse: WAREHOUSES[0],
+      orderAddDateTime: new Date(),
       orderAddSeller: SELLERS[0],
       orderAddCustomerName: "",
-      orderAddDateTime: new Date(),
-      orderAddTotalMoney: 1000,
       orderAddStatus: "Chờ xác nhận đơn",
+      orderAddTotalMoney: 1000,
     },
     validate,
     onSubmit: (order) => {
