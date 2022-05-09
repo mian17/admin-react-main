@@ -15,7 +15,7 @@ const CardOrdersTable = (props) => {
       <div className="card-body table-responsive-sm p-0">
         <table
           id="orders-table"
-          className="table table-bordered table-hover table-head-fixed text-nowrap"
+          className="table table-bordered table-hover text-nowrap"
         >
           <thead>
             <tr>
@@ -84,6 +84,7 @@ const CardOrdersTable = (props) => {
                           className="mr-2"
                           style={{ cursor: "pointer" }}
                           icon={faCopy}
+                          onClick={props.onClickCopyIcon}
                         />
                         <FontAwesomeIcon
                           className="mr-2"

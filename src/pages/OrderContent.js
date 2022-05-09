@@ -20,7 +20,7 @@ const OrderContent = () => {
   // TODO: - add confirm box. DONE
   //       - add copy function
   //       - add edit function and then open a modal
-  //       - style the confirm box
+  //       - style the confirm box DONE
   const options = {
     labels: {
       confirmable: "Đồng ý",
@@ -45,6 +45,10 @@ const OrderContent = () => {
     },
   };
 
+  const copyOrderHandler = (e) => {
+    console.log(JSON.stringify(ordersToAdd[e.target.closest("tr").dataset.id]));
+    // navigator.clipboard.writeText(`${e.target.closest("tr")}`);
+  };
   const deleteOrderHandler = async (e) => {
     const result = await confirm(
       "Bạn có chắc chắn muốn xóa đơn hàng này?",
@@ -68,6 +72,7 @@ const OrderContent = () => {
         <section className="col-lg-12">
           <CardOrdersTable
             tableItems={ordersToAdd}
+            onClickCopyIcon={copyOrderHandler}
             onClickDeleteIcon={deleteOrderHandler}
           />
         </section>
