@@ -108,6 +108,8 @@ const OrderAdd = (props) => {
       props.onClick(order);
     },
   });
+  let formIsValid;
+  formIsValid = Object.keys(formik.errors).length === 0;
 
   return (
     <div className="card card-primary">
@@ -118,7 +120,7 @@ const OrderAdd = (props) => {
       <form onSubmit={formik.handleSubmit}>
         <div className="card-body">
           <div className="row">
-            <div className="col-6">
+            <div className="col-md-6">
               <div className="form-group">
                 <label htmlFor="orderAddId">Mã đơn hàng</label>
                 <input
@@ -181,7 +183,7 @@ const OrderAdd = (props) => {
                 ) : null}
               </div>
             </div>
-            <div className="col-6">
+            <div className="col-md-6">
               <div className="form-group">
                 <label htmlFor="orderAddCustomerName">Khách hàng</label>
                 <input
@@ -261,6 +263,7 @@ const OrderAdd = (props) => {
         <div className="card-footer">
           <button
             // onClick={addOrderHandler}
+            disabled={!formIsValid}
             type="submit"
             className="btn btn-primary float-right"
           >

@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import "animate.css";
 
 import Preloader from "./MainComponents/Preloader/Preloader";
 import Navbar from "./MainComponents/Navbar/Navbar";
@@ -15,23 +16,25 @@ import ProductsEnterStockContent from "./pages/ProductsEnterStockContent";
 function App() {
   return (
     <div className="wrapper">
-      <Preloader />
-      <Navbar />
-      <MainSidebar />
-      <Routes>
-        <Route path="/" element={<DashboardContent />} />
-        <Route path="/order" element={<OrderContent />} />
-        <Route path="/product" element={<ProductContent />} />
-        <Route path="/customer" element={<CustomerContent />} />
-        <Route path="/stock" element={<ProductsEnterStockContent />} />
-      </Routes>
+      <div className="container-fluid">
+        <Preloader />
+        <Navbar />
+        <MainSidebar />
+        <Routes>
+          <Route path="/" element={<DashboardContent />} />
+          <Route path="/order" element={<OrderContent />} />
+          <Route path="/product" element={<ProductContent />} />
+          <Route path="/customer" element={<CustomerContent />} />
+          <Route path="/enterstock" element={<ProductsEnterStockContent />} />
+        </Routes>
 
-      {/*<StillInWarehouseContent />*/}
-      {/*<SalesNumberContent />*/}
-      {/*<SpendMoneyContent />*/}
-      {/*<RevenueContent />*/}
-      {/*<SettingContent />*/}
-      <Footer />
+        {/*<StillInWarehouseContent />*/}
+        {/*<SalesNumberContent />*/}
+        {/*<SpendMoneyContent />*/}
+        {/*<RevenueContent />*/}
+        {/*<SettingContent />*/}
+        <Footer />
+      </div>
     </div>
   );
 }

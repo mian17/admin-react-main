@@ -12,8 +12,11 @@ const CardOrdersTable = (props) => {
         <h3 className="card-title">Danh sách đơn hàng</h3>
       </div>
 
-      <div className="card-body">
-        <table id="orders-table" className="table table-bordered table-hover">
+      <div className="card-body table-responsive-sm p-0">
+        <table
+          id="orders-table"
+          className="table table-bordered table-hover table-head-fixed text-nowrap"
+        >
           <thead>
             <tr>
               <th>Mã đơn hàng</th>

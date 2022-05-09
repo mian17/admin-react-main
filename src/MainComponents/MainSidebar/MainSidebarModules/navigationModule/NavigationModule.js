@@ -7,7 +7,7 @@ const generalComponents = [
   { id: 1, icon: "fas fa-shopping-cart", label: "Đơn hàng", path: "/order" },
   { id: 2, icon: "fas fa-box", label: "Sản phẩm", path: "/product" },
   { id: 3, icon: "fas fa-users", label: "Khách hàng", path: "/customer" },
-  { id: 4, icon: "fas fa-truck", label: "Nhập kho", path: "/stock" },
+  { id: 4, icon: "fas fa-truck", label: "Nhập kho", path: "/enterstock" },
   // { id: 5, icon: "fas fa-warehouse", label: "Tồn kho" },
   // { id: 6, icon: "fas fa-truck-loading", label: "Doanh số" },
   // { id: 7, icon: "fas fa-file-alt", label: "Thu chi" },
