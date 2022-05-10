@@ -5,8 +5,21 @@ import OrderAdd from "../MainComponents/Content/MainContentModules/components/Fo
 import CardOrdersTable from "../MainComponents/Content/MainContentModules/components/CardTable/CardOrdersTable/CardOrdersTable";
 import ContentHeader from "../MainComponents/Content/ContentHeader";
 
+import ModalEditOrder from "../MainComponents/Content/MainContentModules/components/Forms/Order/ModalEditOrder";
+
+// FOR GETTING DATA FROM DATABASE IN THE FUTURE
+export const WAREHOUSES = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khánh Hòa"];
+export const SELLERS = [
+  "Nguyễn Văn A",
+  "Nguyễn Thị B",
+  "Trần Đình C",
+  "Ngô Đỗ Thị D",
+];
+
 const OrderContent = () => {
   const [ordersToAdd, setOrdersToAdd] = useState([]);
+  const [showModalOrderIndex, setShowModalOrderIndex] = useState(null);
+  const [editBtnClicked, setEditBtnClicked] = useState(false);
 
   const addOrderHandler = (order) => {
     // If check whether ID is already in ordersToAdd Array
@@ -18,7 +31,7 @@ const OrderContent = () => {
   };
 
   // TODO: - add confirm box. DONE
-  //       - add copy function
+  //       - add copy function DONE
   //       - add edit function and then open a modal
   //       - style the confirm box DONE
   const options = {
@@ -46,8 +59,14 @@ const OrderContent = () => {
   };
 
   const copyOrderHandler = (e) => {
-    console.log(JSON.stringify(ordersToAdd[e.target.closest("tr").dataset.id]));
-    // navigator.clipboard.writeText(`${e.target.closest("tr")}`);
+    const selectedRow = ordersToAdd[e.target.closest("tr").dataset.id];
+    let readyForClipboard = "";
+    for (const data in selectedRow) {
+      readyForClipboard += `${selectedRow[data]}\t`;
+    }
+    navigator.clipboard.writeText(readyForClipboard).then(() => {
+      alert("Đã copy nội dung hàng!");
+    });
   };
   const deleteOrderHandler = async (e) => {
     const result = await confirm(
@@ -61,20 +80,43 @@ const OrderContent = () => {
       );
     }
   };
+  // let orderIndex;
+  const showEditOrderModalHandler = (e) => {
+    setEditBtnClicked(true);
+    let orderId = e.target.closest("tr").dataset.id;
+    setShowModalOrderIndex(orderId);
+    // orderIndex = e.target.closest("tr").dataset.id;
+  };
+
+  const editOrderHandler = () => {
+    console.log("clicked");
+  };
 
   return (
     <>
       <div className="content-wrapper">
         <ContentHeader name="Đơn hàng" />
         <section className="col-lg-12">
-          <OrderAdd onClick={addOrderHandler} />
+          <OrderAdd
+            warehouses={WAREHOUSES}
+            sellers={SELLERS}
+            onClick={addOrderHandler}
+          />
         </section>
         <section className="col-lg-12">
           <CardOrdersTable
             tableItems={ordersToAdd}
             onClickCopyIcon={copyOrderHandler}
             onClickDeleteIcon={deleteOrderHandler}
+            onClickEditIcon={showEditOrderModalHandler}
           />
+          {editBtnClicked && (
+            <ModalEditOrder
+              orderDetails={ordersToAdd[showModalOrderIndex]}
+              orderIndex={showModalOrderIndex}
+              editOrderFunc={editOrderHandler}
+            />
+          )}
         </section>
       </div>
     </>
