@@ -32,10 +32,6 @@ const OrderContent = () => {
     setOrdersToAdd((prevState) => [...prevState, order]);
   };
 
-  // TODO: - add confirm box. DONE
-  //       - add copy function DONE
-  //       - add edit function and then open a modal
-  //       - style the confirm box DONE
   const options = {
     labels: {
       confirmable: "Đồng ý",

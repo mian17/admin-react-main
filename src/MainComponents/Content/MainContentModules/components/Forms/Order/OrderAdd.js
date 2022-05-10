@@ -118,7 +118,7 @@ const OrderAdd = (props) => {
   formIsValid = Object.keys(formik.errors).length === 0;
 
   return (
-    <div className="card card-primary">
+    <div className="card card-secondary">
       <div className="card-header">
         <h3 className="card-title">Tạo đơn hàng</h3>
       </div>

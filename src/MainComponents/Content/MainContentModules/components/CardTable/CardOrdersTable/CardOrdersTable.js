@@ -13,7 +13,6 @@ const CardOrdersTableMessage = (props) => {
   return (
     <tr>
       <td style={{ textAlign: "center" }} colSpan={props.numCols}>
-        {/*Không có dữ liệu phù hợp với mã đơn hàng bạn nhập.*/}
         {props.message}
       </td>
     </tr>
@@ -21,12 +20,12 @@ const CardOrdersTableMessage = (props) => {
 };
 
 const CardOrdersTable = (props) => {
+  const data = props.tableItems;
+  // const ordersId = data.map((order) => order.orderAddId);
   // States
   const [idQuery, setIdQuery] = useState("");
-
-  const idQueryChangeHandler = (e) => {
-    setIdQuery(e.target.value);
-  };
+  const [ordersIdForDeletion, setOrdersIdForDeletion] = useState([]);
+  const [selectAllOrder, setSelectAllOrder] = useState(false);
 
   // Data for Table
   const headers = [
@@ -38,7 +37,6 @@ const CardOrdersTable = (props) => {
     { label: "Trạng thái", key: "orderAddStatus" },
     { label: "Tổng tiền", key: "orderAddTotalMoney" },
   ];
-  const data = props.tableItems;
 
   const CSVBtnClasses =
     Object.keys(data).length === 0
@@ -53,9 +51,54 @@ const CardOrdersTable = (props) => {
     }
   });
 
+  // Handlers
+  const idQueryChangeHandler = (e) => {
+    setIdQuery(e.target.value);
+  };
+
+  // FIXME duplicates in the array when using the below handler
+  const addAllIdForDeletionChangeHandler = (e) => {
+    if (e.target.checked) {
+      setOrdersIdForDeletion((prevState) => {
+        const uniqueIdSet = new Set([...prevState, ...ordersId]);
+        return Array.from(uniqueIdSet);
+      });
+    } else {
+    }
+    // else {
+    //   setOrdersIdForDeletion((prevState) =>
+    //     prevState.filter((id) => !ordersId.includes(id))
+    //   );
+    // }
+    // else {
+    //   setOrdersIdForDeletion((prevState) =>
+    //     prevState.filter((arr) => arr !== ordersId)
+    //   );
+    // }
+  };
+
+  const addIdForDeletionChangeHandler = (e) => {
+    const checkedBoxValue = e.target.value;
+    const boxIsChecked = e.target.checked;
+    const haveThatIdAlready = !ordersIdForDeletion.includes(checkedBoxValue);
+
+    if (boxIsChecked && haveThatIdAlready) {
+      setOrdersIdForDeletion((prevState) => [...prevState, checkedBoxValue]);
+    } else {
+      // Remove id from the array if box is unchecked
+      setOrdersIdForDeletion((prevState) =>
+        prevState.filter((value) => value !== checkedBoxValue)
+      );
+    }
+  };
+  console.log(ordersIdForDeletion);
+
+  // For disabling input check box all order for deletion
+  let noDataToDeleteAll = data.length === 0;
+
   return (
     <div className="card">
-      <div className="card-header bg-primary">
+      <div className="card-header bg-secondary">
         <h3 className="card-title">Danh sách đơn hàng</h3>
       </div>
       <div className="p-2 d-flex">
@@ -75,13 +118,29 @@ const CardOrdersTable = (props) => {
           </CSVLink>
         </div>
       </div>
-      <div className="card-body table-responsive p-0">
+      <div className="card-body table-responsive overflow-auto p-3">
         <table
           id="orders-table"
-          className="table table-bordered table-hover table-head-fixed text-nowrap"
+          className="table table-bordered table-hover text-nowrap "
         >
           <thead>
             <tr>
+              <th>
+                <div className="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    className="custom-control-input"
+                    id="checkAllOrders"
+                    onChange={addAllIdForDeletionChangeHandler}
+                    disabled={noDataToDeleteAll}
+                  />
+                  <label
+                    className="custom-control-label"
+                    htmlFor="checkAllOrders"
+                    style={{ left: "4px" }}
+                  ></label>
+                </div>
+              </th>
               <th>Mã đơn hàng</th>
               <th>Kho xuất</th>
               <th>Thời điểm bán</th>
@@ -95,14 +154,14 @@ const CardOrdersTable = (props) => {
           <tbody>
             {filteredArray.length === 0 && props.tableItems.length === 0 && (
               <CardOrdersTableMessage
-                numCols={8}
+                numCols={9}
                 message={"Không có dữ liệu"}
               />
             )}
 
             {filteredArray.length === 0 && props.tableItems.length !== 0 && (
               <CardOrdersTableMessage
-                numCols={8}
+                numCols={9}
                 message={"Không có dữ liệu phù hợp với mã đơn hàng bạn nhập."}
               />
             )}
@@ -142,6 +201,22 @@ const CardOrdersTable = (props) => {
 
                 return (
                   <tr key={i} data-id={i}>
+                    <td>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={"orderCheck" + i}
+                          style={{ top: "2px", left: "26px" }}
+                          value={orderId}
+                          onChange={addIdForDeletionChangeHandler}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor={"orderCheck" + i}
+                        ></label>
+                      </div>
+                    </td>
                     <td>{orderId}</td>
                     <td>{orderWarehouse}</td>
                     <td>{orderDate + " " + orderTime}</td>
@@ -188,6 +263,7 @@ const CardOrdersTable = (props) => {
           </tbody>
           <tfoot>
             <tr>
+              <th>&nbsp;</th>
               <th>Mã đơn hàng</th>
               <th>Kho xuất</th>
               <th>Thời điểm bán</th>

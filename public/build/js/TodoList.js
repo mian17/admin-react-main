@@ -5,28 +5,28 @@
  * --------------------------------------------
  */
 
-import $ from 'jquery'
+import $ from "jquery";
 
 /**
  * Constants
  * ====================================================
  */
 
-const NAME = 'TodoList'
-const DATA_KEY = 'lte.todolist'
-const JQUERY_NO_CONFLICT = $.fn[NAME]
+const NAME = "TodoList";
+const DATA_KEY = "lte.todolist";
+const JQUERY_NO_CONFLICT = $.fn[NAME];
 
-const SELECTOR_DATA_TOGGLE = '[data-widget="todo-list"]'
-const CLASS_NAME_TODO_LIST_DONE = 'done'
+const SELECTOR_DATA_TOGGLE = '[data-widget="todo-list"]';
+const CLASS_NAME_TODO_LIST_DONE = "done";
 
 const Default = {
   onCheck(item) {
-    return item
+    return item;
   },
   onUnCheck(item) {
-    return item
-  }
-}
+    return item;
+  },
+};
 
 /**
  * Class Definition
@@ -35,62 +35,69 @@ const Default = {
 
 class TodoList {
   constructor(element, config) {
-    this._config = config
-    this._element = element
+    this._config = config;
+    this._element = element;
 
-    this._init()
+    this._init();
   }
 
   // Public
 
+  static _jQueryInterface(config) {
+    return this.each(function () {
+      let data = $(this).data(DATA_KEY);
+
+      if (!data) {
+        data = $(this).data();
+      }
+
+      const _options = $.extend(
+        {},
+        Default,
+        typeof config === "object" ? config : data
+      );
+      const plugin = new TodoList($(this), _options);
+
+      $(this).data(DATA_KEY, typeof config === "object" ? config : data);
+
+      if (config === "init") {
+        plugin[config]();
+      }
+    });
+  }
+
   toggle(item) {
-    item.parents('li').toggleClass(CLASS_NAME_TODO_LIST_DONE)
-    if (!$(item).prop('checked')) {
-      this.unCheck($(item))
-      return
+    item.parents("li").toggleClass(CLASS_NAME_TODO_LIST_DONE);
+    if (!$(item).prop("checked")) {
+      this.unCheck($(item));
+      return;
     }
 
-    this.check(item)
+    this.check(item);
   }
 
   check(item) {
-    this._config.onCheck.call(item)
-  }
-
-  unCheck(item) {
-    this._config.onUnCheck.call(item)
+    this._config.onCheck.call(item);
   }
 
   // Private
 
-  _init() {
-    const $toggleSelector = this._element
-
-    $toggleSelector.find('input:checkbox:checked').parents('li').toggleClass(CLASS_NAME_TODO_LIST_DONE)
-    $toggleSelector.on('change', 'input:checkbox', event => {
-      this.toggle($(event.target))
-    })
+  unCheck(item) {
+    this._config.onUnCheck.call(item);
   }
 
   // Static
 
-  static _jQueryInterface(config) {
-    return this.each(function () {
-      let data = $(this).data(DATA_KEY)
+  _init() {
+    const $toggleSelector = this._element;
 
-      if (!data) {
-        data = $(this).data()
-      }
-
-      const _options = $.extend({}, Default, typeof config === 'object' ? config : data)
-      const plugin = new TodoList($(this), _options)
-
-      $(this).data(DATA_KEY, typeof config === 'object' ? config : data)
-
-      if (config === 'init') {
-        plugin[config]()
-      }
-    })
+    $toggleSelector
+      .find("input:checkbox:checked")
+      .parents("li")
+      .toggleClass(CLASS_NAME_TODO_LIST_DONE);
+    $toggleSelector.on("change", "input:checkbox", (event) => {
+      this.toggle($(event.target));
+    });
   }
 }
 
@@ -99,20 +106,20 @@ class TodoList {
  * ====================================================
  */
 
-$(window).on('load', () => {
-  TodoList._jQueryInterface.call($(SELECTOR_DATA_TOGGLE))
-})
+$(window).on("load", () => {
+  TodoList._jQueryInterface.call($(SELECTOR_DATA_TOGGLE));
+});
 
 /**
  * jQuery API
  * ====================================================
  */
 
-$.fn[NAME] = TodoList._jQueryInterface
-$.fn[NAME].Constructor = TodoList
+$.fn[NAME] = TodoList._jQueryInterface;
+$.fn[NAME].Constructor = TodoList;
 $.fn[NAME].noConflict = function () {
-  $.fn[NAME] = JQUERY_NO_CONFLICT
-  return TodoList._jQueryInterface
-}
+  $.fn[NAME] = JQUERY_NO_CONFLICT;
+  return TodoList._jQueryInterface;
+};
 
-export default TodoList
+export default TodoList;
