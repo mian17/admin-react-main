@@ -7,6 +7,8 @@ import ContentHeader from "../MainComponents/Content/ContentHeader";
 
 import ModalEditOrder from "../MainComponents/Content/MainContentModules/components/Forms/Order/ModalEditOrder";
 
+import { renameKey } from "../utilities/func-utils";
+
 // FOR GETTING DATA FROM DATABASE IN THE FUTURE
 export const WAREHOUSES = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khánh Hòa"];
 export const SELLERS = [
@@ -85,11 +87,45 @@ const OrderContent = () => {
     setEditBtnClicked(true);
     let orderId = e.target.closest("tr").dataset.id;
     setShowModalOrderIndex(orderId);
-    // orderIndex = e.target.closest("tr").dataset.id;
   };
 
-  const editOrderHandler = () => {
-    console.log("clicked");
+  const editOrderHandler = (editedOrder) => {
+    editedOrder = renameKey(editedOrder, "modalEditOrderId", "orderAddId");
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderWarehouse",
+      "orderAddWarehouse"
+    );
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderDateTime",
+      "orderAddDateTime"
+    );
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderSeller",
+      "orderAddSeller"
+    );
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderCustomerName",
+      "orderAddCustomerName"
+    );
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderStatus",
+      "orderAddStatus"
+    );
+    editedOrder = renameKey(
+      editedOrder,
+      "modalEditOrderTotalMoney",
+      "orderAddTotalMoney"
+    );
+
+    setOrdersToAdd((prevState) => {
+      prevState[showModalOrderIndex] = editedOrder;
+      return [...prevState];
+    });
   };
 
   return (

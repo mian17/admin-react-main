@@ -74,7 +74,7 @@ const validate = (values) => {
 };
 
 const ModalEditOrder = (props) => {
-  const orderData = props.orderDetails;
+  const orderData = !props.orderDetails ? {} : props.orderDetails;
   const formik = useFormik({
     initialValues: {
       modalEditOrderId: orderData.orderAddId,
@@ -88,12 +88,12 @@ const ModalEditOrder = (props) => {
     validate,
     enableReinitialize: true,
     onSubmit: (editedOrder, { resetForm }) => {
-      console.log("clicked");
-      console.log(editedOrder);
+      props.editOrderFunc(editedOrder);
       resetForm();
     },
   });
-  // formIsValid = Object.keys(formik.errors).length === 0;
+  let formIsValid;
+  formIsValid = Object.keys(formik.errors).length === 0;
 
   return (
     <div
@@ -273,9 +273,11 @@ const ModalEditOrder = (props) => {
               Hủy
             </button>
             <button
-              type="button"
+              type="submit"
               className="btn btn-primary"
               onClick={formik.handleSubmit}
+              disabled={!formIsValid}
+              data-dismiss="modal"
             >
               Lưu thay đổi
             </button>
