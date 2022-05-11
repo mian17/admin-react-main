@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -21,11 +21,18 @@ const CardOrdersTableMessage = (props) => {
 
 const CardOrdersTable = (props) => {
   const data = props.tableItems;
-  // const ordersId = data.map((order) => order.orderAddId);
+  const ordersId = data.map((order) => order.orderAddId);
   // States
   const [idQuery, setIdQuery] = useState("");
-  const [ordersIdForDeletion, setOrdersIdForDeletion] = useState([]);
+
   const [selectAllOrder, setSelectAllOrder] = useState(false);
+  const [ordersIdForDeletion, setOrdersIdForDeletion] = useState([]);
+
+  const selectAllCheckbox = useRef(null);
+
+  console.log(idQuery, ordersIdForDeletion);
+
+  // TODO NEED TO IMPLEMENT SELECT ALL ORDER FOR DELETION
 
   // Data for Table
   const headers = [
@@ -56,43 +63,37 @@ const CardOrdersTable = (props) => {
     setIdQuery(e.target.value);
   };
 
-  // FIXME duplicates in the array when using the below handler
-  // const addAllIdForDeletionChangeHandler = (e) => {
-  // if (e.target.checked) {
-  //   setOrdersIdForDeletion((prevState) => {
-  //     const uniqueIdSet = new Set([...prevState, ...ordersId]);
-  //     return Array.from(uniqueIdSet);
-  //   });
-  // } else {
-  // }
-  // else {
-  //   setOrdersIdForDeletion((prevState) =>
-  //     prevState.filter((id) => !ordersId.includes(id))
-  //   );
-  // }
-  // else {
-  //   setOrdersIdForDeletion((prevState) =>
-  //     prevState.filter((arr) => arr !== ordersId)
-  //   );
-  // }
-  // };
+  const selectAllOrderHandler = () => {
+    setSelectAllOrder((prevState) => !prevState);
+
+    setOrdersIdForDeletion([...ordersId]);
+    if (selectAllOrder) {
+      setOrdersIdForDeletion([]);
+    }
+  };
 
   const addIdForDeletionChangeHandler = (e) => {
-    const checkedBoxValue = e.target.value;
-    const boxIsChecked = e.target.checked;
-    const haveThatIdAlready = !ordersIdForDeletion.includes(checkedBoxValue);
+    const { id, checked } = e.target;
+    setOrdersIdForDeletion((prevState) => [...prevState, id]);
 
-    if (boxIsChecked && haveThatIdAlready) {
-      setOrdersIdForDeletion((prevState) => [...prevState, checkedBoxValue]);
-    } else {
-      // Remove id from the array if box is unchecked
+    // if (checked) {
+    //   if (
+    //     ordersIdForDeletion.length < data.length &&
+    //     ordersIdForDeletion.length > 0
+    //   )
+    //     selectAllCheckbox.current.indeterminate = true;
+    //   // else if (ordersIdForDeletion.length === 0)
+    //   //   selectAllCheckbox.current.indeterminate = false;
+    // }
+
+    if (!checked) {
       setOrdersIdForDeletion((prevState) =>
-        prevState.filter((value) => value !== checkedBoxValue)
+        prevState.filter((value) => value !== id)
       );
     }
   };
-  console.log(ordersIdForDeletion);
 
+  console.log(ordersIdForDeletion, ordersIdForDeletion.length);
   // For disabling input check box all order for deletion
   let noDataToDeleteAll = data.length === 0;
 
@@ -131,8 +132,13 @@ const CardOrdersTable = (props) => {
                     type="checkbox"
                     className="custom-control-input"
                     id="checkAllOrders"
-                    // onChange={addAllIdForDeletionChangeHandler}
+                    onChange={selectAllOrderHandler}
+                    checked={
+                      ordersIdForDeletion.length === data.length && // control checkbox state when same length as incoming data
+                      ordersIdForDeletion.length > 0 // and when the array for deletion has any other value
+                    }
                     disabled={noDataToDeleteAll}
+                    ref={selectAllCheckbox}
                   />
                   <label
                     className="custom-control-label"
@@ -206,9 +212,10 @@ const CardOrdersTable = (props) => {
                         <input
                           className="form-check-input"
                           type="checkbox"
-                          id={"orderCheck" + i}
+                          id={orderId}
                           style={{ top: "2px", left: "26px" }}
                           value={orderId}
+                          checked={ordersIdForDeletion.includes(orderId)}
                           onChange={addIdForDeletionChangeHandler}
                         />
                         <label
