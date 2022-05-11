@@ -57,25 +57,25 @@ const CardOrdersTable = (props) => {
   };
 
   // FIXME duplicates in the array when using the below handler
-  const addAllIdForDeletionChangeHandler = (e) => {
-    if (e.target.checked) {
-      setOrdersIdForDeletion((prevState) => {
-        const uniqueIdSet = new Set([...prevState, ...ordersId]);
-        return Array.from(uniqueIdSet);
-      });
-    } else {
-    }
-    // else {
-    //   setOrdersIdForDeletion((prevState) =>
-    //     prevState.filter((id) => !ordersId.includes(id))
-    //   );
-    // }
-    // else {
-    //   setOrdersIdForDeletion((prevState) =>
-    //     prevState.filter((arr) => arr !== ordersId)
-    //   );
-    // }
-  };
+  // const addAllIdForDeletionChangeHandler = (e) => {
+  // if (e.target.checked) {
+  //   setOrdersIdForDeletion((prevState) => {
+  //     const uniqueIdSet = new Set([...prevState, ...ordersId]);
+  //     return Array.from(uniqueIdSet);
+  //   });
+  // } else {
+  // }
+  // else {
+  //   setOrdersIdForDeletion((prevState) =>
+  //     prevState.filter((id) => !ordersId.includes(id))
+  //   );
+  // }
+  // else {
+  //   setOrdersIdForDeletion((prevState) =>
+  //     prevState.filter((arr) => arr !== ordersId)
+  //   );
+  // }
+  // };
 
   const addIdForDeletionChangeHandler = (e) => {
     const checkedBoxValue = e.target.value;
@@ -131,7 +131,7 @@ const CardOrdersTable = (props) => {
                     type="checkbox"
                     className="custom-control-input"
                     id="checkAllOrders"
-                    onChange={addAllIdForDeletionChangeHandler}
+                    // onChange={addAllIdForDeletionChangeHandler}
                     disabled={noDataToDeleteAll}
                   />
                   <label
