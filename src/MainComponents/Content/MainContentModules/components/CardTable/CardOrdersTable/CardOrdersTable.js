@@ -30,10 +30,6 @@ const CardOrdersTable = (props) => {
 
   const selectAllCheckbox = useRef(null);
 
-  console.log(idQuery, ordersIdForDeletion);
-
-  // TODO NEED TO IMPLEMENT SELECT ALL ORDER FOR DELETION
-
   // Data for Table
   const headers = [
     { label: "Mã đơn hàng", key: "orderAddId" },
@@ -47,8 +43,8 @@ const CardOrdersTable = (props) => {
 
   const CSVBtnClasses =
     Object.keys(data).length === 0
-      ? "btn btn-success disabled"
-      : "btn btn-success";
+      ? "btn btn-secondary disabled"
+      : "btn btn-secondary";
 
   const filteredArray = props.tableItems.filter((item) => {
     if (idQuery === "" || idQuery.length === 1) {
@@ -71,7 +67,10 @@ const CardOrdersTable = (props) => {
       setOrdersIdForDeletion([]);
     }
   };
+  // FIXME indeterminate process does not produce desired result
 
+  // TODO: IMPLEMENT CHANGING PROPS OF SELECT ALL ORDER FOR DELETION BUTTON
+  //  TO INDETERMINATE, IN ORDER TO ACHIEVE THE DESIRED RESULT
   const addIdForDeletionChangeHandler = (e) => {
     const { id, checked } = e.target;
     setOrdersIdForDeletion((prevState) => [...prevState, id]);
@@ -93,7 +92,10 @@ const CardOrdersTable = (props) => {
     }
   };
 
-  console.log(ordersIdForDeletion, ordersIdForDeletion.length);
+  const deleteSelectedOrderHandler = () => {
+    props.onClickDeleteSelectedOrders(ordersIdForDeletion);
+  };
+
   // For disabling input check box all order for deletion
   let noDataToDeleteAll = data.length === 0;
 
@@ -117,6 +119,13 @@ const CardOrdersTable = (props) => {
           <CSVLink className={CSVBtnClasses} data={data} headers={headers}>
             Xuất file Excel
           </CSVLink>
+          <button
+            className="btn btn-danger"
+            disabled={noDataToDeleteAll}
+            onClick={deleteSelectedOrderHandler}
+          >
+            Xóa đơn hàng đã chọn
+          </button>
         </div>
       </div>
       <div className="card-body table-responsive overflow-auto p-3">
@@ -173,9 +182,7 @@ const CardOrdersTable = (props) => {
             )}
 
             {filteredArray &&
-              filteredArray.map((order, i, arr) => {
-                if (arr.length === 0)
-                  console.log("There's nothing in the array");
+              filteredArray.map((order, i) => {
                 const {
                   orderAddId: orderId,
                   orderAddWarehouse: orderWarehouse,

@@ -124,6 +124,20 @@ const OrderContent = () => {
     });
   };
 
+  const deleteSelectedOrdersHandler = async (ordersToDelete) => {
+    const result = await confirm(
+      "Bạn có chắc chắn muốn xóa những đơn hàng này?",
+      options
+    );
+    if (result) {
+      setOrdersToAdd((prevState) => {
+        return prevState.filter(
+          (order) => !ordersToDelete.includes(order.orderAddId)
+        );
+      });
+    }
+  };
+
   return (
     <>
       <div className="content-wrapper">
@@ -141,6 +155,7 @@ const OrderContent = () => {
             onClickCopyIcon={copyOrderHandler}
             onClickDeleteIcon={deleteOrderHandler}
             onClickEditIcon={showEditOrderModalHandler}
+            onClickDeleteSelectedOrders={deleteSelectedOrdersHandler}
           />
           {editBtnClicked && (
             <ModalEditOrder

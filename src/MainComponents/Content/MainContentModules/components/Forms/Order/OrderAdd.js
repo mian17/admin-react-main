@@ -264,11 +264,11 @@ const OrderAdd = (props) => {
             </div>
           </div>
         </div>
-        <div className="card-footer">
+        <div className="card-footer float-right">
           <button
             disabled={!formIsValid}
             type="submit"
-            className="btn btn-primary float-right"
+            className="btn btn-secondary"
           >
             Thêm đơn hàng
           </button>
