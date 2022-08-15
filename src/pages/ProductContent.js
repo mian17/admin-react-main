@@ -2,6 +2,8 @@ import ContentHeader from "../MainComponents/Content/ContentHeader";
 import ProductAdd from "../MainComponents/Content/MainContentModules/components/Forms/Product/ProductAdd";
 import CardProductsTable from "../MainComponents/Content/MainContentModules/components/CardTable/CardProductsTable/CardProductsTable";
 
+
+
 const ProductContent = () => {
   return (
     <>
