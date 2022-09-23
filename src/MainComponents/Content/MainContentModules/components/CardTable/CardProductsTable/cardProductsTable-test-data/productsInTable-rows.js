@@ -7,8 +7,8 @@ export const productsInTableRows = [
     100,
     14000000,
     "Hiển thị",
-    "Điện thoại thông minh",
-    "Thế giới di động"
+    "Điện thoại thông minh"
+    // "Thế giới di động"
   ),
   new ProductInTable(
     2,
@@ -16,8 +16,8 @@ export const productsInTableRows = [
     100,
     15000000,
     "Ẩn",
-    "Điện thoại thông minh",
-    "Thế giới di động"
+    "Điện thoại thông minh"
+    // "Thế giới di động"
   ),
   new ProductInTable(
     3,
@@ -25,8 +25,8 @@ export const productsInTableRows = [
     100,
     20000000,
     "Hiển thị",
-    "Điện thoại thông minh",
-    "Thế giới di động"
+    "Điện thoại thông minh"
+    // "Thế giới di động"
   ),
   new ProductInTable(
     4,
@@ -34,8 +34,8 @@ export const productsInTableRows = [
     100,
     14000000,
     "Hiển thị",
-    "Điện thoại thông minh",
-    "Thế giới di động"
+    "Điện thoại thông minh"
+    // "Thế giới di động"
   ),
   new ProductInTable(
     5,
@@ -43,7 +43,7 @@ export const productsInTableRows = [
     100,
     10000,
     "Ẩn",
-    "Điện thoại thông minh",
-    "Thế giới di động"
+    "Điện thoại thông minh"
+    // "Thế giới di động"
   ),
 ];

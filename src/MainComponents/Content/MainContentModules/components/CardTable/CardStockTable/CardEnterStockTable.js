@@ -1,4 +1,4 @@
-const CardStockTable = () => {
+const CardEnterStockTable = () => {
   // Mã phiếu nhập, kho nhập, tình trạng, ngày nhập, người nhập, tổng tiền ,nợ
   return (
     <div className="col-12">
@@ -54,4 +54,4 @@ const CardStockTable = () => {
     </div>
   );
 };
-export default CardStockTable;
+export default CardEnterStockTable;

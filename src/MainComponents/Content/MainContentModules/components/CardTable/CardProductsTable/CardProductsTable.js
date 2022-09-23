@@ -1,31 +1,30 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { useTable, useRowSelect } from "react-table";
 import {
   useExpanded,
-  useFilters,
-  useGroupBy,
-  usePagination,
-  useSortBy,
   useGlobalFilter,
+  useGroupBy,
+  useRowSelect,
+  useSortBy,
+  useTable,
 } from "react-table";
-import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
 
-import { productsInTableHeaders } from "./cardProductsTable-test-data/products-in-table-headers";
 import { productsInTableRows } from "./cardProductsTable-test-data/productsInTable-rows";
-import ModalEditOrder from "../../Forms/Order/ModalEditOrder";
 import { confirm } from "react-confirm-box";
-import {
-  copyInfoHandler,
-  editInfoHandler,
-} from "../../../../../../common/utils/helperFunctions";
+
 import { confirmBoxOptions } from "../../../../../../common/utils/options";
 import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
+
 import ModalEditProduct from "../../Forms/Product/ModalEditProduct";
 import { CSVLink } from "react-csv";
+import apiClient from "../../../../../../api";
+import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
+import ProductInTable from "./cardProductsTableUtils/ProductInTable";
+import { backendServerPath } from "../../../../../../utilities/backendServerPath";
+import classes from "./CardProductsTable.module.css";
+
 const CardProductsTable = () => {
   // Modal State
   const [show, setShow] = useState(false);
@@ -36,14 +35,68 @@ const CardProductsTable = () => {
   // Editing product id state
   const [editingProductId, setEditingProductId] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(2);
+
+  const [filter, setFilter] = useState("");
+  const filterChangeHandler = (e) => {
+    setFilter(e.target.value);
+  };
+
   // React Table Handler
+  const fetchProducts = useCallback(async () => {
+    try {
+      await apiClient.get("/sanctum/csrf-cookie");
+      const response = await apiClient.get(
+        `api/admin/product?page=${currentPage}&filter=${filter}`,
+        tokenHeaderConfig
+      );
+      console.log(response.data);
+
+      setLastPage(response.data.last_page);
+      const transformedProducts = response.data.data.map((product) => {
+        const productQuantity = product.kinds.reduce((prevVal, kind) => {
+          return prevVal + kind.quantity;
+        }, 0);
+
+        return new ProductInTable(
+          product.id,
+          backendServerPath + product.kinds[0].image_1,
+          product.name,
+          productQuantity,
+          product.price,
+          product.status,
+          product.category.name,
+          product.brand
+        );
+      });
+
+      setData(transformedProducts);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [currentPage, filter]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   const [data, setData] = useState(useMemo(() => productsInTableRows, []));
 
   const columns = useMemo(
     () => [
       {
-        Header: "Mã sản phẩm",
-        accessor: "id", // accessor is the "key" in the data
+        Header: "Id",
+        accessor: "id",
+      },
+      {
+        Header: "Ảnh cover",
+        accessor: "img",
+        Cell: ({ cell: { value } }) => (
+          <div className={classes["product-img"]}>
+            <img className={classes["product-img"]} src={value} alt="" />
+          </div>
+        ),
       },
       {
         Header: "Tên sản phẩm",
@@ -66,15 +119,15 @@ const CardProductsTable = () => {
         Header: "Trạng thái",
         accessor: "status",
       },
-      {
-        Header: "Nhà bán",
-        accessor: "merchant",
-      },
+      // {
+      //   Header: "Nhà bán",
+      //   accessor: "merchant",
+      // },
       {
         Header: "Chức năng",
         accessor: "functions",
 
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           const rowValues = cell.row.values;
           const rowItemId = cell.row.values.id; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
@@ -105,6 +158,7 @@ const CardProductsTable = () => {
     ],
     []
   );
+
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
 
@@ -116,10 +170,12 @@ const CardProductsTable = () => {
       alert("Đã copy nội dung hàng của bảng!");
     });
   }
+
   function editInfoHandler(productId) {
     setEditingProductId(productId);
     setShow(true);
   }
+
   async function deleteInfoHandler(productIdToDelete) {
     const result = await confirm(
       "Bạn có chắc chắn muốn xóa sản phẩm này?",
@@ -131,6 +187,7 @@ const CardProductsTable = () => {
       );
     }
   }
+
   const deleteBulkInfoHandler = async () => {
     // a variable from react table library
     const bulkId = selectedFlatRows.map((row) => row.original.id);
@@ -146,13 +203,14 @@ const CardProductsTable = () => {
       });
     }
   };
+
   const tableInstance = useTable(
     { columns, data },
     useGlobalFilter,
     useGroupBy,
     useSortBy,
     useExpanded,
-    usePagination,
+    // usePagination,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => {
@@ -175,28 +233,18 @@ const CardProductsTable = () => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page,
-    nextPage,
-    previousPage,
-    canNextPage,
-    canPreviousPage,
-    pageCount,
-    setPageSize,
-
+    rows,
     prepareRow,
-    state,
-    setGlobalFilter,
     selectedFlatRows,
   } = tableInstance;
 
-  const { globalFilter, pageIndex, pageSize } = state;
   const headers = [
-    { label: "Mã đơn hàng", key: "id" },
+    { label: "SKU", key: "sku" },
     { label: "Tên sản phẩm", key: "name" },
     { label: "Số lượng", key: "quantity" },
-    { label: "Trạng thái", key: "price" },
-    { label: "Danh mục", key: "status" },
-    { label: "Nhà bán", key: "category" },
+    { label: "Trạng thái", key: "status" },
+    { label: "Danh mục", key: "category" },
+    // { label: "Nhà bán", key: "category" },
   ];
   // this.id = id;
   // this.name = name;
@@ -204,6 +252,32 @@ const CardProductsTable = () => {
   // this.price = price;
   // this.status = status;
   // this.category = category;
+  function nextPageHandler() {
+    if (currentPage < lastPage) {
+      setCurrentPage((previousPage) => previousPage + 1);
+    }
+  }
+
+  function previousPageHandler() {
+    if (currentPage > 1) {
+      setCurrentPage((previousPage) => previousPage - 1);
+    }
+  }
+
+  console.log(currentPage);
+
+  function firstPageHandler() {
+    setCurrentPage(1);
+  }
+
+  function lastPageHandler() {
+    setCurrentPage(lastPage);
+  }
+
+  function changePageOnClickedValue(e) {
+    setCurrentPage(+e.target.value);
+  }
+
   // this.merchant = merchant;
   return (
     <div className="card">
@@ -227,19 +301,11 @@ const CardProductsTable = () => {
             </Button>
           </div>
           <div className="col-md-6 text-right">
-            <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(+e.target.value)}
-            >
-              {[10, 25, 50].map((pageSize) => {
-                return (
-                  <option key={pageSize} value={pageSize}>
-                    Hiện {pageSize} dòng
-                  </option>
-                );
-              })}
-            </select>
+            {/*<GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />*/}
+            <span>
+              <strong className="mr-2">Tìm kiếm</strong>
+              <input value={filter || ""} onChange={filterChangeHandler} />
+            </span>
           </div>
         </div>
         <table
@@ -254,7 +320,7 @@ const CardProductsTable = () => {
                     {...column.getHeaderProps(column.getSortByToggleProps())}
                     {...column.getHeaderProps()}
                   >
-                    {column.render("Header")}{" "}
+                    {column.render("Header")}
                     <span>
                       {column.isSorted ? (
                         column.isSortedDesc ? (
@@ -273,11 +339,11 @@ const CardProductsTable = () => {
           </thead>
 
           <tbody {...getTableBodyProps()}>
-            {page.map((row) => {
+            {rows.map((row) => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()}>
-                  {row.cells.map((cell, i) => {
+                  {row.cells.map((cell) => {
                     return (
                       <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
                     );
@@ -287,26 +353,69 @@ const CardProductsTable = () => {
             })}
           </tbody>
         </table>
-        <div style={{ textAlign: "right" }}>
-          <span>
-            Trang <strong>{pageIndex + 1}</strong> / {pageCount}
-          </span>
-          <button
-            className="btn btn-dark"
-            onClick={() => previousPage()}
-            disabled={!canPreviousPage}
-          >
-            <FontAwesomeIcon icon={solid("angle-left")} />
-          </button>
+        <pre>
+          <code>
+            {JSON.stringify({
+              selectedFlatRows: selectedFlatRows.map((row) => row.original),
+            })}
+          </code>
+        </pre>
+        <ul className="pagination">
+          <li className="page-item" onClick={firstPageHandler}>
+            <button className="page-link">&laquo;</button>
+          </li>
+          <li className="page-item" onClick={previousPageHandler}>
+            <button className="page-link" aria-label="Previous">
+              <span aria-hidden="true">&larr;</span>
+              <span className="sr-only">Previous</span>
+            </button>
+          </li>
 
-          <button
-            className="btn btn-dark"
-            onClick={() => nextPage()}
-            disabled={!canNextPage}
-          >
-            <FontAwesomeIcon icon={solid("angle-right")} />
-          </button>
-        </div>
+          {currentPage > 2 && (
+            <li className="page-item">
+              <button className="page-link" disabled>
+                ...
+              </button>
+            </li>
+          )}
+          {Array.from(Array(lastPage), (e, i) => {
+            return (
+              <div key={i}>
+                {i >= currentPage - 2 && i <= currentPage + 2 && (
+                  <li
+                    className={`page-item ${
+                      Number(currentPage) === i + 1 ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      onClick={changePageOnClickedValue}
+                      className="page-link"
+                      value={i + 1}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                )}
+              </div>
+            );
+          })}
+          {currentPage < lastPage - 3 && (
+            <li className="page-item">
+              <button className="page-link" disabled>
+                ...
+              </button>
+            </li>
+          )}
+          <li className="page-item" onClick={nextPageHandler}>
+            <button className="page-link" aria-label="Next">
+              <span aria-hidden="true">&rarr;</span>
+              <span className="sr-only">Next</span>
+            </button>
+          </li>
+          <li className="page-item" onClick={lastPageHandler}>
+            <button className="page-link">&raquo;</button>
+          </li>
+        </ul>
       </div>
       <ModalEditProduct
         editingProductId={editingProductId}
