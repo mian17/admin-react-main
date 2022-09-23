@@ -19,8 +19,8 @@ export default class Product {
     productDescription,
     productDetailInfo,
 
-    productColorCode,
-    hasCategoricalInputs,
+    // productColorCode,
+    // hasCategoricalInputs,
     categoricalInfo
   ) {
     this.productSku = productSku;
@@ -41,8 +41,8 @@ export default class Product {
     this.productDescription = productDescription;
     this.productDetailInfo = productDetailInfo;
 
-    this.productColorCode = productColorCode;
-    this.hasCategoricalInputs = hasCategoricalInputs;
+    // this.productColorCode = productColorCode;
+    // this.hasCategoricalInputs = hasCategoricalInputs;
     this.categoricalInfo = categoricalInfo;
   }
 }

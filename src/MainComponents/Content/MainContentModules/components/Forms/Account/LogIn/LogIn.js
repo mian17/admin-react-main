@@ -69,7 +69,7 @@ const LogIn = () => {
           localStorage.getItem("personalAccessToken")
         ),
       });
-      navigate("/admin");
+      navigate("/");
     } catch (error) {
       setError(error.response.data);
     }

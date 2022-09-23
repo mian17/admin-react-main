@@ -23,6 +23,7 @@ const Content = () => {
           >
             <Route
               path="/"
+              index
               element={
                 <>
                   <Navbar />
