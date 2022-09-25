@@ -2,7 +2,7 @@ import React from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { Field } from "formik";
 
-const FormTextField = ({
+const FormField = ({
   as,
   md,
   controlId,
@@ -12,14 +12,15 @@ const FormTextField = ({
   inputGroupPrepend,
   step,
   min,
+  placeholder,
 }) => {
   return (
     <Field name={name}>
       {({ field, form }) => {
         const isValid = !form.errors[field.name];
         const isInvalid = form.touched[field.name] && !isValid;
-
         return (
+          // <Form.Group as={as} md={md} controlId={controlId}>
           <Form.Group as={as} md={md} controlId={controlId}>
             <Form.Label>{label}</Form.Label>
             <InputGroup>
@@ -32,6 +33,7 @@ const FormTextField = ({
                 isValid={form.touched[field.name] && isValid}
                 isInvalid={isInvalid}
                 feedback={form.errors[field.name]}
+                placeholder={placeholder ? placeholder : null}
               />
 
               <Form.Control.Feedback type="invalid">
@@ -45,9 +47,9 @@ const FormTextField = ({
   );
 };
 
-FormTextField.defaultProps = {
+FormField.defaultProps = {
   type: "text",
   inputGroupPrepend: null,
 };
 
-export default FormTextField;
+export default FormField;

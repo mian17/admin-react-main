@@ -3,13 +3,15 @@ import { Col, Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import React, { useCallback, useEffect, useState } from "react";
 import Product from "./productForm-utils/Product";
-import * as Yup from "yup";
-import { ErrorMessage, FieldArray, Formik } from "formik";
-import FormTextField from "../../../../../../common/components/FormTextField";
+import { FieldArray, Formik } from "formik";
+import FormField from "../../../../../../common/components/FormField";
 import FormSelectField from "../../../../../../common/components/FormSelectField";
 import { units } from "../../../../../../common/utils/units";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
+import {
+  tokenHeaderConfig,
+  userToken,
+} from "../../../../../../common/utils/api-config";
 import Merchant from "./productForm-utils/Merchant";
 import Warehouse from "./productForm-utils/Warehouse";
 import Category from "./productForm-utils/Category";
@@ -18,99 +20,7 @@ import FormTextAreaField from "../../../../../../common/components/FormTextAreaF
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Categorical from "./productForm-utils/Categorical";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-
-const colorCodeRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
-const skuRegex = "(?=\\S*[A-Z])(?=\\S*\\d)[A-Z\\d]{10,}";
-
-const ProductSchema = Yup.object().shape({
-  productSku: Yup.string()
-    .matches(
-      skuRegex,
-      "Mã SKU của sản phẩm cần có ít nhất 1 chữ số, 1 ký tự và đúng trên 10 ký tự"
-    )
-    .required("Không để trống mã SKU của sản phẩm"),
-  productName: Yup.string()
-    .min(8, "Dữ liệu cần dài hơn 8 ký tự")
-    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
-    .required("Không để trống tên sản phẩm"),
-
-  productCategory: Yup.number()
-    .min(1, "Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống tên danh mục"),
-
-  productPrice: Yup.number()
-    .positive("Đơn giá sản phẩm phải là số nguyên dương")
-    .integer("Đơn giá sản phẩm phải là số nguyên dương")
-    .min(200, "Đơn giá sản phẩm phải trên 200 VNĐ")
-    .required("Không để trống đơn giá sản phẩm"),
-  productCostPrice: Yup.number()
-    .positive("Giá vốn sản phẩm phải là số nguyên dương")
-    .integer("Giá vốn sản phẩm phải là số nguyên dương")
-    .min(200, "Giá vốn sản phẩm phải trên 200 VNĐ")
-    .required("Không để trống giá vốn sản phẩm"),
-  productBrand: Yup.string()
-    .min(2, "Dữ liệu cần dài hơn 2 ký tự")
-    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
-    .required("Không để trống tên hãng"),
-  productMass: Yup.number()
-    .positive("Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống khối lượng của sản phẩm"),
-  productUnit: Yup.string()
-    .min(1, "Tên đơn vị nằm ngoài lựa chọn")
-    .max(2, "Tên đơn vị nằm ngoài lựa chọn")
-    .required("Không để trống tên đơn vị khối lượng của sản phẩm"),
-  productStatus: Yup.number()
-    .min(0, "Status hiển thị cần là số nguyên dương")
-    .integer("Status hiển thị cần là số nguyên dương")
-    .lessThan(2, "Giá trị nằm ngoài các giá trị hiển thị")
-    .required("Không để trống giá trị hiển thị"),
-  productMerchant: Yup.array()
-    .of(
-      Yup.number()
-        .min(1, "Sai dữ liệu")
-        .integer("Sai dữ liệu")
-        .required("Không để trống nhà bán")
-    )
-    .min(1, "Bạn cần chọn nhà bán"),
-  productWarehouse: Yup.array()
-    .of(
-      Yup.number()
-        .min(1, "Sai dữ liệu")
-        .integer("Sai dữ liệu")
-        .required("Không để trống nhà kho")
-    )
-    .min(1, "Bạn cần chọn kho"),
-
-  productSummary: Yup.string()
-    .min(1, "Nội dung tóm tắt ngắn quá")
-    .max(255, "Nội dung tóm tắt dài quá")
-    .required("Bạn cần phải nhập nội dung tóm tắt cho sản phẩm"),
-  productDescription: Yup.string()
-    .min(1, "Nội dung miêu tả sản phẩm ngắn quá")
-    .max(1024, "Nội dung miêu tả sản phẩm dài quá")
-    .required("Bạn cần phải nhập nội dung miêu tả cho sản phẩm"),
-  productDetailInfo: Yup.string()
-    .min(1, "Nội dung chi tiết sản phẩm ngắn quá")
-    .max(1024, "Nội dung chi tiết sản phẩm dài quá")
-    .required("Bạn cần phải nhập nội dung chi tiết cho sản phẩm"),
-  productColorCode: Yup.string()
-    .matches(colorCodeRegex, "Mã màu cần đúng theo định dạng #F00 hoặc #000000")
-    .required("Không để trống mã màu của sản phẩm"),
-  // hasCategoricalInputs: Yup.boolean(),
-  categoricalInfo: Yup.array().of(
-    Yup.object().shape({
-      name: Yup.string().required("Kiểu loại cần có tên"),
-      colorCode: Yup.string()
-        .matches(
-          colorCodeRegex,
-          "Mã màu cần đúng theo định dạng #F00 hoặc #000000"
-        )
-        .required("Không để trống mã màu của sản phẩm"),
-    })
-  ),
-});
+import { ProductSchema } from "../../../../../../common/utils/validationSchema";
 
 const ProductInputs = () => {
   // const [showCategorical, setShowCategorical] = useState(false);
@@ -137,6 +47,12 @@ const ProductInputs = () => {
     [new Categorical("", "", "", 0, "")]
   );
 
+  // const [fileState, setFileState] = useState([]);
+  // const fileUploadHandler = (e) => {
+  //   console.log(e.target);
+  //   // setFileState([...prevState, e.target.files])
+  // };
+
   // console.log(warehouses);
 
   const [categories, setCategories] = useState([]);
@@ -152,11 +68,11 @@ const ProductInputs = () => {
         tokenHeaderConfig
       );
 
-      const merchantsResponse = await apiClient.get(
+      const warehousesResponse = await apiClient.get(
         "api/admin/warehouse",
         tokenHeaderConfig
       );
-      const warehousesResponse = await apiClient.get(
+      const merchantsResponse = await apiClient.get(
         "api/admin/merchant",
         tokenHeaderConfig
       );
@@ -169,7 +85,7 @@ const ProductInputs = () => {
           category["children_recursive"]
         );
       });
-      console.log(transformedCategories);
+      // console.log(transformedCategories);
       const transformedMerchants = merchantsResponse.data.map((merchant) => {
         return new Merchant(merchant.id, merchant.name);
       });
@@ -203,20 +119,108 @@ const ProductInputs = () => {
       ))}
     </React.Fragment>
   ));
+  const [error, setError] = useState("");
 
-  console.log(categoriesOptions);
   return (
     <Formik
       initialValues={initialFormValue}
       validationSchema={ProductSchema}
-      onSubmit={(values) => {
-        alert(JSON.stringify(values, null, 2));
+      onSubmit={async (values) => {
+        // console.log(values.categoricalInfo);
+
+        try {
+          alert(JSON.stringify(values, null, 2));
+
+          // values.categoricalInfo.forEach((info, index) => {
+          //   const formData = new FormData();
+          //   formData.append("hinh", info.imageOneUrl);
+          //   info.imageOneUrl = formData;
+          // });
+
+          const {
+            productName: name,
+            productBrand: brand,
+            productCategory: category_id,
+            productSummary: summary,
+            productDescription: desc,
+            productDetailInfo: detail_info,
+            productSku: SKU,
+            productMass: mass,
+            productCostPrice: cost_price,
+            productPrice: price,
+            productUnit: unit,
+            productStatus: status,
+            productMerchant: merchant_ids,
+            productWarehouse: warehouse_ids,
+            categoricalInfo: models,
+          } = values;
+
+          const data = new FormData();
+          data.append("name", name);
+          data.append("brand", brand);
+          data.append("category_id", category_id);
+          data.append("summary", summary);
+          data.append("desc", desc);
+          data.append("detail_info", detail_info);
+          data.append("SKU", SKU);
+          data.append("mass", mass);
+          data.append("cost_price", cost_price);
+          data.append("price", price);
+          data.append("unit", unit);
+          data.append("status", status);
+          data.append("merchant_ids", JSON.stringify(merchant_ids));
+          data.append("warehouse_ids", JSON.stringify(warehouse_ids));
+
+          models.forEach((model, i) => {
+            for (const property in model) {
+              if (property === "imageOneUrl") {
+                data.append(`models[${i}][image_1]`, model[property]);
+                continue;
+              }
+              if (property === "imageTwoUrl") {
+                // if (
+                //   model[property] !== undefined ||
+                //   model[property] !== null ||
+                //   model[property].length !== 0
+                // ) {
+                data.append(`models[${i}][image_2]`, model[property]);
+                // } else {
+                //   data.append(`models[${i}][image_2]`, "");
+                // }
+                continue;
+              }
+
+              if (property !== "imageTwoUrl") {
+                data.append(`models[${i}][${property}]`, model[property]);
+              }
+            }
+          });
+
+          await apiClient.get("/sanctum/csrf-cookie");
+
+          const productResponse = await apiClient.post(
+            "api/admin/product",
+            data,
+            {
+              headers: {
+                Authorization: `Bearer ${userToken}`,
+                Accept: "application/json",
+              },
+            }
+          );
+
+          console.log(productResponse);
+        } catch (error) {
+          console.log(error);
+          setError(error.response.data.message);
+        }
       }}
     >
       {({
         handleSubmit,
         handleChange,
         handleBlur,
+        setFieldValue,
         values,
         touched,
         isValid,
@@ -224,14 +228,25 @@ const ProductInputs = () => {
       }) => (
         <Form className="card-body" onSubmit={handleSubmit}>
           <Row className="mb-3">
-            <FormTextField
+            {error && error.length > 0 && (
+              <div
+                className="alert alert-danger"
+                style={{ width: "100%" }}
+                role="alert"
+              >
+                <i className="icon fas fa-ban"></i> {error}
+              </div>
+            )}
+          </Row>
+          <Row className="mb-3">
+            <FormField
               as={Col}
               controlId="validationFormik01"
               label="SKU"
               type="text"
               name="productSku"
             />
-            <FormTextField
+            <FormField
               as={Col}
               controlId="validationFormik02"
               label="Tên sản phẩm"
@@ -251,7 +266,7 @@ const ProductInputs = () => {
             </FormSelectField>
           </Row>
           <Row className="mb-3">
-            <FormTextField
+            <FormField
               as={Col}
               controlId="validationFormik04"
               label="Đơn giá"
@@ -260,7 +275,7 @@ const ProductInputs = () => {
               min="0"
               name="productPrice"
             />
-            <FormTextField
+            <FormField
               as={Col}
               controlId="validationFormik05"
               label="Giá vốn"
@@ -271,14 +286,14 @@ const ProductInputs = () => {
             />
           </Row>
           <Row className="mb-3">
-            <FormTextField
+            <FormField
               as={Col}
               controlId="validationFormik06"
               label="Hãng"
               type="text"
               name="productBrand"
             />
-            <FormTextField
+            <FormField
               as={Col}
               controlId="validationFormik07"
               label="Khối lượng"
@@ -300,11 +315,21 @@ const ProductInputs = () => {
                 );
               })}
             </FormSelectField>
+            <FormSelectField
+              as={Col}
+              controlId="validationFormik09"
+              label="Trạng thái sản phẩm"
+              type="text"
+              name="productStatus"
+            >
+              <option value="Ẩn">Ẩn</option>
+              <option value="Hiển thị">Hiển thị</option>
+            </FormSelectField>
           </Row>
           <Row className="mb-3">
             <FormSelectField
               as={Col}
-              controlId="validationFormik09"
+              controlId="validationFormik10"
               label="Nhà bán"
               type="text"
               name="productMerchant"
@@ -320,7 +345,7 @@ const ProductInputs = () => {
             </FormSelectField>
             <FormSelectField
               as={Col}
-              controlId="validationFormik10"
+              controlId="validationFormik11"
               label="Nhà kho"
               type="text"
               name="productWarehouse"
@@ -336,9 +361,9 @@ const ProductInputs = () => {
             </FormSelectField>
           </Row>
           <Row className="mb-3">
-            <FormTextField
+            <FormField
               as={Col}
-              controlId="validationFormik11"
+              controlId="validationFormik12"
               name="productSummary"
               label="Tóm tắt sản phẩm"
               type="text"
@@ -347,7 +372,7 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormTextAreaField
               as={Col}
-              controlId="validationFormik12"
+              controlId="validationFormik13"
               label="Miêu tả sản phẩm"
               name="productDescription"
               additionalConfig={{
@@ -358,130 +383,80 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormTextAreaField
               as={Col}
-              controlId="validationFormik13"
+              controlId="validationFormik14"
               label="Thông tin chi tiết"
               name="productDetailInfo"
               additionalConfig={{ removePlugins: ["Heading"] }}
             />
           </Row>
-          {/*<Row className="mb-3">*/}
+          <Row className="mb-3">
+            <FieldArray name="categoricalInfo">
+              {({ insert, remove, push }) => (
+                <>
+                  {values.categoricalInfo &&
+                    values.categoricalInfo.length > 0 &&
+                    values.categoricalInfo.map((info, index) => {
+                      return (
+                        <Row
+                          className="justify-content-md-center align-items-md-center mb-3"
+                          key={index}
+                        >
+                          <Col>
+                            <h5>
+                              Kiểu loại {index === 0 ? "mặc định" : index + 1}
+                            </h5>
+                            <Row className="align-items-center mb-3">
+                              <FormField
+                                as={Col}
+                                label={`Tên kiểu loại ${
+                                  index === 0 ? "mặc định" : index + 1
+                                }`}
+                                name={`categoricalInfo[${index}].name`}
+                                controlId="validationFormik110"
+                                type="text"
+                                placeholder="Nhập tên kiểu loại sản phẩm"
+                              />
 
-          <FieldArray name="categoricalInfo">
-            {({ insert, remove, push }) => (
-              <>
-                {values.categoricalInfo &&
-                  values.categoricalInfo.length > 0 &&
-                  values.categoricalInfo.map((info, index) => {
-                    return (
-                      <Row
-                        className="justify-content-md-center align-items-md-center mb-3"
-                        key={index}
-                      >
-                        <Col>
-                          <h5>
-                            Kiểu loại {index === 0 ? "mặc định" : index + 1}
-                          </h5>
-                          <Row className="align-items-center">
-                            <FormTextField
-                              as={Col}
-                              label={`Tên kiểu loại ${
-                                index === 0 ? "mặc định" : index + 1
-                              }`}
-                              name={`categoricalInfo[${index}].name`}
-                              controlId="validationFormik110"
-                              type="text"
-                            />
-                            {/*<Col>*/}
-                            {/*  <Form.Group*/}
-                            {/*    className="mb-3"*/}
-                            {/*    controlId="validationFormik110"*/}
-                            {/*  >*/}
-                            {/*    <Form.Label>*/}
-                            {/*      Tên kiểu loại{" "}*/}
-                            {/*      {index === 0 ? "mặc định" : index + 1}*/}
-                            {/*    </Form.Label>*/}
-                            {/*    <Form.Control*/}
-                            {/*      type="text"*/}
-                            {/*      name={`categoricalInfo[${index}].name`}*/}
-                            {/*      onChange={handleChange}*/}
-                            {/*      placeholder="Nhập tên cho kiểu loại 1"*/}
-                            {/*    />*/}
+                              <FormField
+                                as={Col}
+                                label={`Mã màu kiểu loại
+                                  ${index === 0 ? "mặc định" : index + 1}`}
+                                name={`categoricalInfo[${index}].colorCode`}
+                                controlId="validationFormik111"
+                                type="text"
+                                placeholder="Nhập mã màu của kiểu loại"
+                              />
 
-                            {/*    <ErrorMessage*/}
-                            {/*      as={Form.Control.Feedback}*/}
-                            {/*      name={`categoricalInfo[${index}].name`}*/}
-                            {/*      type="invalid"*/}
-                            {/*      render={(msg) => (*/}
-                            {/*        <small className="text-red form-text">*/}
-                            {/*          {msg}*/}
-                            {/*        </small>*/}
-                            {/*      )}*/}
-                            {/*    />*/}
-                            {/*  </Form.Group>*/}
-                            {/*</Col>*/}
-                            <Col>
-                              <Form.Group
-                                className="mb-3"
+                              <FormField
+                                as={Col}
+                                label={`Số lượng sản phẩm của kiểu loại
+                                    ${index === 0 ? "mặc định" : index + 1}`}
+                                name={`categoricalInfo[${index}].quantity`}
                                 controlId="validationFormik112"
-                              >
-                                <Form.Label>
-                                  Mã màu kiểu loại{" "}
-                                  {index === 0 ? "mặc định" : index + 1}
-                                </Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name={`categoricalInfo.${index}.colorCode`}
-                                  onChange={handleChange}
-                                  // name="categoricalProduct1Name"
-                                  placeholder="Nhập mã màu tổng thể của sản phẩm"
-                                />
-                                <ErrorMessage
-                                  as={Form.Control.Feedback}
-                                  name={`categoricalInfo.${index}.colorCode`}
-                                  type="invalid"
-                                  render={(msg) => (
-                                    <small className="text-red form-text">
-                                      {msg}
-                                    </small>
-                                  )}
-                                />
-                              </Form.Group>
-                            </Col>
-                            <Col>
-                              <Form.Group
-                                className="mb-3"
-                                controlId="validationFormik113"
-                              >
-                                <Form.Label>
-                                  Số lượng sản phẩm của kiểu loại{" "}
-                                  {index === 0 ? "mặc định" : index + 1}
-                                </Form.Label>
-                                <Form.Control
-                                  type="text"
-                                  name={`categoricalInfo.${index}.quantity`}
-                                  onChange={handleChange}
-                                  // name="categoricalProduct1Name"
-                                  placeholder="Nhập số lượng sản phẩm của kiểu loại"
-                                />
-                                <ErrorMessage
-                                  as={Form.Control.Feedback}
-                                  name={`categoricalInfo.${index}.quantity`}
-                                  type="invalid"
-                                  render={(msg) => (
-                                    <small className="text-red form-text">
-                                      {msg}
-                                    </small>
-                                  )}
-                                />
-                              </Form.Group>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>
-                              <Form.Group
-                                controlId="validationFormik114"
-                                className="mb-3"
-                              >
+                                type="number"
+                                min="0"
+                                placeholder="Nhập số lượng sản phẩm của kiểu loại"
+                              />
+                            </Row>
+                            <Row>
+                              {/*  <FormField*/}
+                              {/*    as={Col}*/}
+                              {/*    label={`Hình cover cho kiểu loại*/}
+                              {/*${index === 0 ? " mặc định" : index + 1}`}*/}
+                              {/*    name={`categoricalInfo.${index}.imageOneUrl`}*/}
+                              {/*    controlId="validationFormik113"*/}
+                              {/*    type="file"*/}
+                              {/*    onChange={(e) => {*/}
+                              {/*      console.log(e.currentTarget.files[0]);*/}
+
+                              {/*      // setFieldValue(*/}
+                              {/*      //   `categoricalInfo.${index}.imageOneUrl`,*/}
+                              {/*      //   e.currentTarget.files[0]*/}
+                              {/*      // );*/}
+                              {/*    }}*/}
+                              {/*  />*/}
+
+                              <Col>
                                 <Form.Label>
                                   Hình cover cho kiểu loại{" "}
                                   {index === 0 ? " mặc định" : index + 1}
@@ -489,18 +464,49 @@ const ProductInputs = () => {
                                 <Form.Control
                                   name={`categoricalInfo.${index}.imageOneUrl`}
                                   type="file"
+                                  onChange={(e) => {
+                                    const file = e.currentTarget.files[0];
+
+                                    setFieldValue(
+                                      `categoricalInfo.${index}.imageOneUrl`,
+                                      file
+                                    );
+
+                                    // setFileState((prevState) => {
+                                    //   const newState = [...prevState];
+                                    //   newState.push(file);
+                                    //   return newState;
+                                    // });
+                                  }}
                                 />
-                                <Form.Text className="text-red">
-                                  Phải chọn hình có tỉ lệ 1:1
-                                </Form.Text>
-                              </Form.Group>
-                            </Col>
-                            {index === 0 && (
-                              <Col>
-                                <Form.Group
-                                  controlId="validationFormik115"
-                                  className="mb-3"
-                                >
+
+                                {values.categoricalInfo[index].imageOneUrl && (
+                                  <img
+                                    style={{ width: "240px", height: "auto" }}
+                                    src={
+                                      values.categoricalInfo[index]
+                                        .imageOneUrl &&
+                                      URL.createObjectURL(
+                                        values.categoricalInfo[index]
+                                          .imageOneUrl
+                                      )
+                                    }
+                                    alt=""
+                                  />
+                                )}
+                              </Col>
+
+                              {index === 0 && (
+                                // <FormField
+                                //   as={Col}
+                                //   label={`Hình on hover cho kiểu loại
+                                //       ${index === 0 ? " mặc định" : index + 1}`}
+                                //   name={`categoricalInfo.${index}.imageTwoUrl`}
+                                //   controlId="validationFormik115"
+                                //   type="file"
+                                //
+
+                                <Col>
                                   <Form.Label>
                                     Hình on hover cho kiểu loại{" "}
                                     {index === 0 ? " mặc định" : index + 1}
@@ -508,259 +514,77 @@ const ProductInputs = () => {
                                   <Form.Control
                                     name={`categoricalInfo.${index}.imageTwoUrl`}
                                     type="file"
+                                    onChange={(e) => {
+                                      const file = e.currentTarget.files[0];
+
+                                      setFieldValue(
+                                        `categoricalInfo.${index}.imageTwoUrl`,
+                                        file
+                                      );
+                                    }}
                                   />
-                                  <Form.Text className="text-red">
-                                    Phải chọn hình có tỉ lệ 1:1
-                                  </Form.Text>
-                                </Form.Group>
-                              </Col>
-                            )}
-                          </Row>
-                        </Col>
-                        <Col md="auto">
-                          <Button
-                            style={{
-                              height: "fit-content",
-                              borderRadius: "50%",
-                            }}
-                            className="btn-danger"
-                            onClick={() => remove(index)}
-                          >
-                            <FontAwesomeIcon icon={solid("trash-can")} />
-                          </Button>
-                        </Col>
-                      </Row>
-                    );
-                  })}
-                <div className="text-center">
-                  <Button
-                    onClick={() =>
-                      push(
-                        new Categorical(
-                          "",
-                          "",
-                          "",
-                          0,
-                          values.categoricalInfo.length === 0 ? "" : undefined
+
+                                  {values.categoricalInfo[index]
+                                    .imageTwoUrl && (
+                                    <img
+                                      style={{
+                                        width: "240px",
+                                        height: "auto",
+                                      }}
+                                      src={
+                                        values.categoricalInfo[index]
+                                          .imageTwoUrl &&
+                                        URL.createObjectURL(
+                                          values.categoricalInfo[index]
+                                            .imageTwoUrl
+                                        )
+                                      }
+                                      alt=""
+                                    />
+                                  )}
+                                </Col>
+                              )}
+                            </Row>
+                          </Col>
+                          <Col md="auto">
+                            <Button
+                              style={{
+                                height: "fit-content",
+                                borderRadius: "50%",
+                              }}
+                              className="btn-danger"
+                              onClick={() => remove(index)}
+                            >
+                              <FontAwesomeIcon icon={solid("trash-can")} />
+                            </Button>
+                          </Col>
+                        </Row>
+                      );
+                    })}
+                  <div className="text-center">
+                    <Button
+                      onClick={() =>
+                        push(
+                          new Categorical(
+                            "",
+                            "",
+                            "",
+                            0,
+                            values.categoricalInfo.length === 0 ? "" : undefined
+                          )
                         )
-                      )
-                    }
-                  >
-                    Thêm kiểu loại
-                  </Button>
-                </div>
-              </>
-            )}
-          </FieldArray>
-          {/*</Row>*/}
-          {/*<Row>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik05" className="mb-3">*/}
-          {/*      <Form.Label>Nhập hình cho sản phẩm</Form.Label>*/}
-          {/*      <Form.Control type="file" multiple />*/}
-          {/*      <Form.Text className="text-red">*/}
-          {/*        Không để trống hình cho sản phẩm*/}
-          {/*      </Form.Text>*/}
-          {/*      <Form.Text className="text-red">*/}
-          {/*        Phải chọn hình có tỉ lệ 1:1*/}
-          {/*      </Form.Text>*/}
-          {/*      <Form.Text className="text-red">*/}
-          {/*        Tối thiểu và tối đa 2 hình nếu sản phẩm chỉ có 1 kiểu loại duy*/}
-          {/*        nhất*/}
-          {/*      </Form.Text>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group className="mb-3" controlId="validationFormik06">*/}
-          {/*      <Form.Label>Mã màu</Form.Label>*/}
-          {/*      <Form.Control*/}
-          {/*        type="text"*/}
-          {/*        name="productColorCode"*/}
-          {/*        value={values.productColorCode}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productColorCode && !errors.productColorCode}*/}
-          {/*        isInvalid={!!errors.productColorCode}*/}
-          {/*        placeholder="Nhập mã màu tổng thể của sản phẩm"*/}
-          {/*      />*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productColorCode}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*</Row>*/}
+                      }
+                    >
+                      Thêm kiểu loại
+                    </Button>
+                  </div>
+                </>
+              )}
+            </FieldArray>
+          </Row>
 
-          {/*<Row>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik16" className="mb-3">*/}
-          {/*      <Form.Label>Danh mục</Form.Label>*/}
-          {/*      <Form.Select*/}
-          {/*        className="form-control"*/}
-          {/*        aria-label="Chọn danh mục"*/}
-          {/*        name="productCategory"*/}
-          {/*        value={values.productCategory}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productCategory && !errors.productCategory}*/}
-          {/*        isInvalid={!!errors.productCategory}*/}
-          {/*      >*/}
-          {/*        <option value="0">Trái cây</option>*/}
-          {/*        <option value="1">Thịt - trứng</option>*/}
-          {/*        <option value="2">Đồ dùng gia đình</option>*/}
-          {/*      </Form.Select>*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productCategory}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik17" className="mb-3">*/}
-          {/*      <Form.Label>Trạng thái</Form.Label>*/}
-          {/*      <Form.Select*/}
-          {/*        className="form-control"*/}
-          {/*        aria-label="Chọn trạng thái"*/}
-          {/*        name="productStatus"*/}
-          {/*        value={values.productStatus}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productStatus && !errors.productStatus}*/}
-          {/*        isInvalid={!!errors.productStatus}*/}
-          {/*      >*/}
-          {/*        <option value="0">Ẩn</option>*/}
-          {/*        <option value="1">Hiển thị</option>*/}
-          {/*      </Form.Select>*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productStatus}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*</Row>*/}
-          {/*<Row>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik18" className="mb-3">*/}
-          {/*      <Form.Label>Nhà bán</Form.Label>*/}
-          {/*      <Form.Select*/}
-          {/*        className="form-control"*/}
-          {/*        aria-label="Chọn trạng thái"*/}
-          {/*        name="productMerchant"*/}
-          {/*        value={values.productMerchant}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productMerchant && !errors.productMerchant}*/}
-          {/*        isInvalid={!!errors.productMerchant}*/}
-          {/*      >*/}
-          {/*        <option value="0">Vinamilk Official Store</option>*/}
-          {/*        <option value="1">TH True Milk Official Store</option>*/}
-          {/*      </Form.Select>*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productMerchant}*/}
-          {/*      </Form.Control.Feedback>*/}
-
-          {/*      /!*<Form.Text className="text-red">Chưa chọn nhà bán</Form.Text>*!/*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik19" className="mb-3">*/}
-          {/*      <Form.Label>Hãng của sản phẩm</Form.Label>*/}
-          {/*      <Form.Control*/}
-          {/*        type="text"*/}
-          {/*        placeholder="Nhập hãng của sản phẩm"*/}
-          {/*        name="productBrand"*/}
-          {/*        value={values.productBrand}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productBrand && !errors.productBrand}*/}
-          {/*        isInvalid={!!errors.productBrand}*/}
-          {/*      />*/}
-          {/*      /!*<Form.Text className="text-red">*!/*/}
-          {/*      /!*  Chưa nhập tên hãng của sản phẩm*!/*/}
-          {/*      /!*</Form.Text>*!/*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productBrand}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*</Row>*/}
-          {/*<Row>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik20" className="mb-3">*/}
-          {/*      <Form.Label>SKU</Form.Label>*/}
-          {/*      <Form.Control*/}
-          {/*        type="text"*/}
-          {/*        placeholder="Nhập SKU của sản phẩm"*/}
-          {/*        name="productSku"*/}
-          {/*        value={values.productSku}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productSku && !errors.productSku}*/}
-          {/*        isInvalid={!!errors.productSku}*/}
-          {/*      />*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productSku}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik21" className="mb-3">*/}
-          {/*      <Form.Label>Khối lượng (g)</Form.Label>*/}
-          {/*      <Form.Control*/}
-          {/*        type="number"*/}
-          {/*        min="0"*/}
-          {/*        placeholder="Nhập khối lượng sản phẩm tính bằng gram"*/}
-          {/*        name="productMass"*/}
-          {/*        value={values.productMass}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productMass && !errors.productMass}*/}
-          {/*        isInvalid={!!errors.productMass}*/}
-          {/*      />*/}
-          {/*      /!*<Form.Text className="text-red">*!/*/}
-          {/*      /!*  Chưa nhập tên hãng của sản phẩm*!/*/}
-          {/*      /!*</Form.Text>*!/*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productMass}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*</Row>*/}
-          {/*<Row>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik22" className="mb-3">*/}
-          {/*      <Form.Label>Đơn vị</Form.Label>*/}
-          {/*      <Form.Select*/}
-          {/*        className="form-control"*/}
-          {/*        aria-label="Chọn đơn vị"*/}
-          {/*        name="productUnit"*/}
-          {/*        value={values.productUnit}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productUnit && !errors.productUnit}*/}
-          {/*        isInvalid={!!errors.productUnit}*/}
-          {/*      >*/}
-          {/*        <option value="0">Cái</option>*/}
-          {/*        <option value="1">Bộ</option>*/}
-          {/*      </Form.Select>*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productUnit}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*  <Col>*/}
-          {/*    <Form.Group controlId="validationFormik17" className="mb-3">*/}
-          {/*      <Form.Label>Nhà kho</Form.Label>*/}
-          {/*      <Form.Select*/}
-          {/*        className="form-control"*/}
-          {/*        aria-label="Chọn trạng thái"*/}
-          {/*        name="productWarehouse"*/}
-          {/*        value={values.productWarehouse}*/}
-          {/*        onChange={handleChange}*/}
-          {/*        isValid={touched.productWarehouse && !errors.productWarehouse}*/}
-          {/*        isInvalid={!!errors.productWarehouse}*/}
-          {/*      >*/}
-          {/*        <option value="0">Kho 1</option>*/}
-          {/*        <option value="1">Kho 2</option>*/}
-          {/*      </Form.Select>*/}
-          {/*      <Form.Control.Feedback type="invalid">*/}
-          {/*        {errors.productWarehouse}*/}
-          {/*      </Form.Control.Feedback>*/}
-          {/*    </Form.Group>*/}
-          {/*  </Col>*/}
-          {/*</Row>*/}
-          {/*disabled={!isValid}*/}
           <pre>{JSON.stringify(values, null, 2)}</pre>
-          <Button variant="primary" type="submit">
+          <Button variant="primary" type="submit" disabled={!isValid}>
             Gửi thông tin
           </Button>
         </Form>

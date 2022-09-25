@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, InputGroup } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { Field } from "formik";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -21,7 +21,7 @@ const FormTextAreaField = ({
           return (
             <Form.Group as={as} md={md} controlId={controlId}>
               <Form.Label>{label}</Form.Label>
-              <InputGroup
+              <Form.Control
                 as={CKEditor}
                 {...field}
                 config={{

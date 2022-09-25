@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { colorCodeRegex, phoneRegex, skuRegex, userNameRegex } from "./regex";
+import { phoneRegex, skuRegex, userNameRegex } from "./regex";
 
 export const SignInSchema = Yup.object().shape({
   email: Yup.string()
@@ -12,75 +12,76 @@ export const SignInSchema = Yup.object().shape({
     .required("Bạn cần phải nhập mật khẩu"),
 });
 
-export const ProductSchema = Yup.object().shape({
-  productId: Yup.number().positive().integer(),
-  productName: Yup.string()
-    .min(8, "Dữ liệu cần dài hơn 8 ký tự")
-    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
-    .required("Không để trống tên sản phẩm"),
-
-  productQuantity: Yup.number()
-    .positive("Số lượng sản phẩm phải là số nguyên dương")
-    .integer("Số lượng sản phẩm phải là số nguyên dương")
-    .required("Không để trống số lượng sản phẩm"),
-
-  productPrice: Yup.number()
-    .positive("Đơn giá sản phẩm phải là số nguyên dương")
-    .integer("Đơn giá sản phẩm phải là số nguyên dương")
-    .min(200, "Đơn giá sản phẩm phải trên 200 VNĐ")
-    .required("Không để trống đơn giá sản phẩm"),
-  productColorCode: Yup.string()
-    .matches(colorCodeRegex, "Mã màu cần đúng theo định dạng #F00 hoặc #000000")
-    .required("Không để trống mã màu của sản phẩm"),
-  productCostPrice: Yup.number()
-    .positive("Giá vốn sản phẩm phải là số nguyên dương")
-    .integer("Giá vốn sản phẩm phải là số nguyên dương")
-    .min(200, "Giá vốn sản phẩm phải trên 200 VNĐ")
-    .required("Không để trống giá vốn sản phẩm"),
-  hasCategoricalInputs: Yup.boolean(),
-  categoricalInfo: Yup.array().of(
-    Yup.object().shape({
-      name: Yup.string().required("Kiểu loại cần có tên"),
-      colorCode: Yup.string()
-        .matches(
-          colorCodeRegex,
-          "Mã màu cần đúng theo định dạng #F00 hoặc #000000"
-        )
-        .required("Không để trống mã màu của sản phẩm"),
-    })
-  ),
-  productCategory: Yup.number()
-    .min(0, "Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống tên danh mục"),
-  productStatus: Yup.number()
-    .min(0, "Status hiển thị cần là số nguyên dương")
-    .integer("Status hiển thị cần là số nguyên dương")
-    .lessThan(2, "Giá trị nằm ngoài các giá trị hiển thị")
-    .required("Không để trống giá trị hiển thị"),
-  productMerchant: Yup.number()
-    .min(0, "Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống tên nhà bán"),
-  productBrand: Yup.string()
-    .min(2, "Dữ liệu cần dài hơn 2 ký tự")
-    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
-    .required("Không để trống tên hãng"),
-  productSku: Yup.string()
-    .matches(
-      skuRegex,
-      "Mã SKU của sản phẩm cần có ít nhất 1 chữ số, 1 ký tự và tổng thể là đúng 10 ký tự"
-    )
-    .required("Không để trống mã SKU của sản phẩm"),
-  productMass: Yup.number()
-    .positive("Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống khối lượng của sản phẩm"),
-  productUnit: Yup.number()
-    .min(0, "Dữ liệu cần là số nguyên dương")
-    .integer("Dữ liệu cần là số nguyên dương")
-    .required("Không để trống đơn vị của sản phẩm"),
-});
+// OLD PRODUCT SCHEMA
+// export const ProductSchema = Yup.object().shape({
+//   productId: Yup.number().positive().integer(),
+//   productName: Yup.string()
+//     .min(8, "Dữ liệu cần dài hơn 8 ký tự")
+//     .max(50, "Dữ liệu cần ít hơn 50 ký tự")
+//     .required("Không để trống tên sản phẩm"),
+//
+//   productQuantity: Yup.number()
+//     .positive("Số lượng sản phẩm phải là số nguyên dương")
+//     .integer("Số lượng sản phẩm phải là số nguyên dương")
+//     .required("Không để trống số lượng sản phẩm"),
+//
+//   productPrice: Yup.number()
+//     .positive("Đơn giá sản phẩm phải là số nguyên dương")
+//     .integer("Đơn giá sản phẩm phải là số nguyên dương")
+//     .min(200, "Đơn giá sản phẩm phải trên 200 VNĐ")
+//     .required("Không để trống đơn giá sản phẩm"),
+//   productColorCode: Yup.string()
+//     .matches(colorCodeRegex, "Mã màu cần đúng theo định dạng #F00 hoặc #000000")
+//     .required("Không để trống mã màu của sản phẩm"),
+//   productCostPrice: Yup.number()
+//     .positive("Giá vốn sản phẩm phải là số nguyên dương")
+//     .integer("Giá vốn sản phẩm phải là số nguyên dương")
+//     .min(200, "Giá vốn sản phẩm phải trên 200 VNĐ")
+//     .required("Không để trống giá vốn sản phẩm"),
+//   hasCategoricalInputs: Yup.boolean(),
+//   categoricalInfo: Yup.array().of(
+//     Yup.object().shape({
+//       name: Yup.string().required("Kiểu loại cần có tên"),
+//       colorCode: Yup.string()
+//         .matches(
+//           colorCodeRegex,
+//           "Mã màu cần đúng theo định dạng #F00 hoặc #000000"
+//         )
+//         .required("Không để trống mã màu của sản phẩm"),
+//     })
+//   ),
+//   productCategory: Yup.number()
+//     .min(0, "Dữ liệu cần là số nguyên dương")
+//     .integer("Dữ liệu cần là số nguyên dương")
+//     .required("Không để trống tên danh mục"),
+//   productStatus: Yup.number()
+//     .min(0, "Status hiển thị cần là số nguyên dương")
+//     .integer("Status hiển thị cần là số nguyên dương")
+//     .lessThan(2, "Giá trị nằm ngoài các giá trị hiển thị")
+//     .required("Không để trống giá trị hiển thị"),
+//   productMerchant: Yup.number()
+//     .min(0, "Dữ liệu cần là số nguyên dương")
+//     .integer("Dữ liệu cần là số nguyên dương")
+//     .required("Không để trống tên nhà bán"),
+//   productBrand: Yup.string()
+//     .min(2, "Dữ liệu cần dài hơn 2 ký tự")
+//     .max(50, "Dữ liệu cần ít hơn 50 ký tự")
+//     .required("Không để trống tên hãng"),
+//   productSku: Yup.string()
+//     .matches(
+//       skuRegex,
+//       "Mã SKU của sản phẩm cần có ít nhất 1 chữ số, 1 ký tự và tổng thể là đúng 10 ký tự"
+//     )
+//     .required("Không để trống mã SKU của sản phẩm"),
+//   productMass: Yup.number()
+//     .positive("Dữ liệu cần là số nguyên dương")
+//     .integer("Dữ liệu cần là số nguyên dương")
+//     .required("Không để trống khối lượng của sản phẩm"),
+//   productUnit: Yup.number()
+//     .min(0, "Dữ liệu cần là số nguyên dương")
+//     .integer("Dữ liệu cần là số nguyên dương")
+//     .required("Không để trống đơn vị của sản phẩm"),
+// });
 export const UserSchema = Yup.object().shape({
   userId: Yup.number().min(0).integer(),
   userFullName: Yup.string()
@@ -143,4 +144,100 @@ export const UserSchema = Yup.object().shape({
     .max(2, "Giá trị nằm ngoài lựa chọn")
     .required("Không để trống giá trị phân quyền của người dùng"),
 });
-export const EnterStockSchema = {};
+// export const EnterStockSchema = {};
+export const ProductSchema = Yup.object().shape({
+  productSku: Yup.string()
+    .matches(
+      skuRegex,
+      "Mã SKU của sản phẩm cần có ít nhất 1 chữ số, 1 ký tự và đúng trên 10 ký tự"
+    )
+    .required("Không để trống mã SKU của sản phẩm"),
+  productName: Yup.string()
+    .min(8, "Dữ liệu cần dài hơn 8 ký tự")
+    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
+    .required("Không để trống tên sản phẩm"),
+
+  productCategory: Yup.number()
+    .min(1, "Dữ liệu cần là số nguyên dương")
+    .integer("Dữ liệu cần là số nguyên dương")
+    .required("Không để trống tên danh mục"),
+
+  productPrice: Yup.number()
+    .positive("Đơn giá sản phẩm phải là số nguyên dương")
+    .integer("Đơn giá sản phẩm phải là số nguyên dương")
+    .min(200, "Đơn giá sản phẩm phải trên 200 VNĐ")
+    .required("Không để trống đơn giá sản phẩm"),
+  productCostPrice: Yup.number()
+    .positive("Giá vốn sản phẩm phải là số nguyên dương")
+    .integer("Giá vốn sản phẩm phải là số nguyên dương")
+    .min(200, "Giá vốn sản phẩm phải trên 200 VNĐ")
+    .required("Không để trống giá vốn sản phẩm"),
+  productBrand: Yup.string()
+    .min(2, "Dữ liệu cần dài hơn 2 ký tự")
+    .max(50, "Dữ liệu cần ít hơn 50 ký tự")
+    .required("Không để trống tên hãng"),
+  productMass: Yup.number()
+    .positive("Dữ liệu cần là số nguyên dương")
+    .integer("Dữ liệu cần là số nguyên dương")
+    .required("Không để trống khối lượng của sản phẩm"),
+  productUnit: Yup.string()
+    .min(1, "Tên đơn vị nằm ngoài lựa chọn")
+    .max(2, "Tên đơn vị nằm ngoài lựa chọn")
+    .required("Không để trống tên đơn vị khối lượng của sản phẩm"),
+  productStatus: Yup.string()
+    .matches(/^(Ẩn|Hiển thị)$/, "Giá trị hiển thị nằm ngoài lựa chọn")
+    .required("Không để trống giá trị hiển thị"),
+  productMerchant: Yup.array()
+    .of(
+      Yup.number()
+        .min(1, "Sai dữ liệu")
+        .integer("Sai dữ liệu")
+        .required("Không để trống nhà bán")
+    )
+    .min(1, "Bạn cần chọn nhà bán"),
+  productWarehouse: Yup.array()
+    .of(
+      Yup.number()
+        .min(1, "Sai dữ liệu")
+        .integer("Sai dữ liệu")
+        .required("Không để trống nhà kho")
+    )
+    .min(1, "Bạn cần chọn kho"),
+
+  productSummary: Yup.string()
+    .min(1, "Nội dung tóm tắt ngắn quá")
+    .max(255, "Nội dung tóm tắt dài quá")
+    .required("Bạn cần phải nhập nội dung tóm tắt cho sản phẩm"),
+  productDescription: Yup.string()
+    .min(1, "Nội dung miêu tả sản phẩm ngắn quá")
+    .max(1024, "Nội dung miêu tả sản phẩm dài quá")
+    .required("Bạn cần phải nhập nội dung miêu tả cho sản phẩm"),
+  productDetailInfo: Yup.string()
+    .min(1, "Nội dung chi tiết sản phẩm ngắn quá")
+    .max(1024, "Nội dung chi tiết sản phẩm dài quá")
+    .required("Bạn cần phải nhập nội dung chi tiết cho sản phẩm"),
+  // productColorCode: Yup.string()
+  //   .matches(colorCodeRegex, "Mã màu cần đúng theo định dạng #F00 hoặc #000000")
+  //   .required("Không để trống mã màu của sản phẩm"),
+  // hasCategoricalInputs: Yup.boolean(),
+  // categoricalInfo: Yup.array()
+  //   .of(
+  //     Yup.object().shape({
+  //       name: Yup.string().required("Kiểu loại cần có tên"),
+  //       colorCode: Yup.string()
+  //         .matches(
+  //           colorCodeRegex,
+  //           "Mã màu cần đúng theo định dạng #F00 hoặc #000000"
+  //         )
+  //         .required("Không để trống mã màu của sản phẩm"),
+  //       imageOneUrl: Yup.string().required(
+  //         "Bạn cần thêm hình cover cho sản phẩm"
+  //       ),
+  //       quantity: Yup.number()
+  //         .min(1, "Số lượng sản phẩm cho kiểu mẫu phải ít nhất là 1")
+  //         .required("Bạn cần thêm số lượng sản phẩm cho kiểu mẫu"),
+  //       imageTwoUrl: Yup.string(),
+  //     })
+  //   )
+  //   .min(1, "Phải có ít nhất 1 kiểu loại"),
+});

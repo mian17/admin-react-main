@@ -32,6 +32,7 @@ const FormSelectField = ({
                 feedback={form.errors[field.name]}
                 multiple={!!multiple}
                 as="select"
+                style={{ width: "100%" }}
               >
                 {children}
               </Form.Control>
