@@ -1,432 +1,291 @@
-const CardOrdersTable = () => {
-  // useScript()
+import { useRef, useState } from "react";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCopy,
+  faPenToSquare,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+
+import { CSVLink } from "react-csv";
+
+const CardOrdersTableMessage = (props) => {
+  return (
+    <tr>
+      <td style={{ textAlign: "center" }} colSpan={props.numCols}>
+        {props.message}
+      </td>
+    </tr>
+  );
+};
+
+const CardOrdersTable = (props) => {
+  const data = props.tableItems;
+  const ordersId = data.map((order) => order.orderAddId);
+  // States
+  const [idQuery, setIdQuery] = useState("");
+
+  const [selectAllOrder, setSelectAllOrder] = useState(false);
+  const [ordersIdForDeletion, setOrdersIdForDeletion] = useState([]);
+
+  const selectAllCheckbox = useRef(null);
+
+  // Data for Table
+  const headers = [
+    { label: "Mã đơn hàng", key: "orderAddId" },
+    { label: "Kho xuất", key: "orderAddWarehouse" },
+    { label: "Thời điểm bán", key: "orderAddDateTime" },
+    { label: "Thu ngân", key: "orderAddSeller" },
+    { label: "Khách hàng", key: "orderAddCustomerName" },
+    { label: "Trạng thái", key: "orderAddStatus" },
+    { label: "Tổng tiền", key: "orderAddTotalMoney" },
+  ];
+
+  const CSVBtnClasses =
+    Object.keys(data).length === 0
+      ? "btn btn-secondary disabled"
+      : "btn btn-secondary";
+
+  const filteredArray = props.tableItems.filter((item) => {
+    if (idQuery === "" || idQuery.length === 1) {
+      return item;
+    } else {
+      return item.orderAddId.includes(idQuery);
+    }
+  });
+
+  // Handlers
+  const idQueryChangeHandler = (e) => {
+    setIdQuery(e.target.value);
+  };
+
+  const selectAllOrderHandler = () => {
+    setSelectAllOrder((prevState) => !prevState);
+
+    setOrdersIdForDeletion([...ordersId]);
+    if (selectAllOrder) {
+      setOrdersIdForDeletion([]);
+    }
+  };
+  // FIXME indeterminate process does not produce desired result
+
+  // TODO: IMPLEMENT CHANGING PROPS OF SELECT ALL ORDER FOR DELETION BUTTON
+  //  TO INDETERMINATE, IN ORDER TO ACHIEVE THE DESIRED RESULT
+  const addIdForDeletionChangeHandler = (e) => {
+    const { id, checked } = e.target;
+    setOrdersIdForDeletion((prevState) => [...prevState, id]);
+
+    // if (checked) {
+    //   if (
+    //     ordersIdForDeletion.length < data.length &&
+    //     ordersIdForDeletion.length > 0
+    //   )
+    //     selectAllCheckbox.current.indeterminate = true;
+    //   // else if (ordersIdForDeletion.length === 0)
+    //   //   selectAllCheckbox.current.indeterminate = false;
+    // }
+
+    if (!checked) {
+      setOrdersIdForDeletion((prevState) =>
+        prevState.filter((value) => value !== id)
+      );
+    }
+  };
+
+  const deleteSelectedOrderHandler = () => {
+    props.onClickDeleteSelectedOrders(ordersIdForDeletion);
+  };
+
+  // For disabling input check box all order for deletion
+  let noDataToDeleteAll = data.length === 0;
+
   return (
     <div className="card">
-      <div className="card-header bg-primary">
+      <div className="card-header bg-secondary">
         <h3 className="card-title">Danh sách đơn hàng</h3>
       </div>
+      <div className="p-2 d-flex">
+        <div className="form-inline">
+          <div className="input-group">
+            <input
+              className="form-control"
+              type="search"
+              placeholder="Nhập mã đơn hàng để tìm kiếm"
+              aria-label="Tìm kiếm"
+              onChange={idQueryChangeHandler}
+            />
+          </div>
 
-      <div className="card-body">
-        <table id="example1" className="table table-bordered table-hover">
+          <CSVLink className={CSVBtnClasses} data={data} headers={headers}>
+            Xuất file Excel
+          </CSVLink>
+          <button
+            className="btn btn-danger"
+            disabled={noDataToDeleteAll}
+            onClick={deleteSelectedOrderHandler}
+          >
+            Xóa đơn hàng đã chọn
+          </button>
+        </div>
+      </div>
+      <div className="card-body table-responsive overflow-auto p-3">
+        <table
+          id="orders-table"
+          className="table table-bordered table-hover text-nowrap "
+        >
           <thead>
             <tr>
-              <th>Rendering engine</th>
-              <th>Browser</th>
-              <th>Platform(s)</th>
-              <th>Engine version</th>
-              <th>CSS grade</th>
+              <th>
+                <div className="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    className="custom-control-input"
+                    id="checkAllOrders"
+                    onChange={selectAllOrderHandler}
+                    checked={
+                      ordersIdForDeletion.length === data.length && // control checkbox state when same length as incoming data
+                      ordersIdForDeletion.length > 0 // and when the array for deletion has any other value
+                    }
+                    disabled={noDataToDeleteAll}
+                    ref={selectAllCheckbox}
+                  />
+                  <label
+                    className="custom-control-label"
+                    htmlFor="checkAllOrders"
+                    style={{ left: "4px" }}
+                  ></label>
+                </div>
+              </th>
+              <th>Mã đơn hàng</th>
+              <th>Kho xuất</th>
+              <th>Thời điểm bán</th>
+              <th>Thu ngân</th>
+              <th>Khách hàng</th>
+              <th>Trạng thái</th>
+              <th>Tổng tiền</th>
+              <th>Tính năng</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Trident</td>
-              <td>Internet Explorer 4.0</td>
-              <td>Win 95+</td>
-              <td> 4</td>
-              <td>X</td>
-            </tr>
-            <tr>
-              <td>Trident</td>
-              <td>Internet Explorer 5.0</td>
-              <td>Win 95+</td>
-              <td>5</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Trident</td>
-              <td>Internet Explorer 5.5</td>
-              <td>Win 95+</td>
-              <td>5.5</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Trident</td>
-              <td>Internet Explorer 6</td>
-              <td>Win 98+</td>
-              <td>6</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Trident</td>
-              <td>Internet Explorer 7</td>
-              <td>Win XP SP2+</td>
-              <td>7</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Trident</td>
-              <td>AOL browser (AOL desktop)</td>
-              <td>Win XP</td>
-              <td>6</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Firefox 1.0</td>
-              <td>Win 98+ / OSX.2+</td>
-              <td>1.7</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Firefox 1.5</td>
-              <td>Win 98+ / OSX.2+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Firefox 2.0</td>
-              <td>Win 98+ / OSX.2+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Firefox 3.0</td>
-              <td>Win 2k+ / OSX.3+</td>
-              <td>1.9</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Camino 1.0</td>
-              <td>OSX.2+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Camino 1.5</td>
-              <td>OSX.3+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Netscape 7.2</td>
-              <td>Win 95+ / Mac OS 8.6-9.2</td>
-              <td>1.7</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Netscape Browser 8</td>
-              <td>Win 98SE+</td>
-              <td>1.7</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Netscape Navigator 9</td>
-              <td>Win 98+ / OSX.2+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.0</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.1</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.1</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.2</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.2</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.3</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.3</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.4</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.4</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.5</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.5</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.6</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>1.6</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.7</td>
-              <td>Win 98+ / OSX.1+</td>
-              <td>1.7</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Mozilla 1.8</td>
-              <td>Win 98+ / OSX.1+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Seamonkey 1.1</td>
-              <td>Win 98+ / OSX.2+</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Gecko</td>
-              <td>Epiphany 2.20</td>
-              <td>Gnome</td>
-              <td>1.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>Safari 1.2</td>
-              <td>OSX.3</td>
-              <td>125.5</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>Safari 1.3</td>
-              <td>OSX.3</td>
-              <td>312.8</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>Safari 2.0</td>
-              <td>OSX.4+</td>
-              <td>419.3</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>Safari 3.0</td>
-              <td>OSX.4+</td>
-              <td>522.1</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>OmniWeb 5.5</td>
-              <td>OSX.4+</td>
-              <td>420</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>iPod Touch / iPhone</td>
-              <td>iPod</td>
-              <td>420.1</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Webkit</td>
-              <td>S60</td>
-              <td>S60</td>
-              <td>413</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 7.0</td>
-              <td>Win 95+ / OSX.1+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 7.5</td>
-              <td>Win 95+ / OSX.2+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 8.0</td>
-              <td>Win 95+ / OSX.2+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 8.5</td>
-              <td>Win 95+ / OSX.2+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 9.0</td>
-              <td>Win 95+ / OSX.3+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 9.2</td>
-              <td>Win 88+ / OSX.3+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera 9.5</td>
-              <td>Win 88+ / OSX.3+</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Opera for Wii</td>
-              <td>Wii</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Nokia N800</td>
-              <td>N800</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Presto</td>
-              <td>Nintendo DS browser</td>
-              <td>Nintendo DS</td>
-              <td>8.5</td>
-              <td>
-                C/A<sup>1</sup>
-              </td>
-            </tr>
-            <tr>
-              <td>KHTML</td>
-              <td>Konqureror 3.1</td>
-              <td>KDE 3.1</td>
-              <td>3.1</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>KHTML</td>
-              <td>Konqureror 3.3</td>
-              <td>KDE 3.3</td>
-              <td>3.3</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>KHTML</td>
-              <td>Konqureror 3.5</td>
-              <td>KDE 3.5</td>
-              <td>3.5</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Tasman</td>
-              <td>Internet Explorer 4.5</td>
-              <td>Mac OS 8-9</td>
-              <td>-</td>
-              <td>X</td>
-            </tr>
-            <tr>
-              <td>Tasman</td>
-              <td>Internet Explorer 5.1</td>
-              <td>Mac OS 7.6-9</td>
-              <td>1</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Tasman</td>
-              <td>Internet Explorer 5.2</td>
-              <td>Mac OS 8-X</td>
-              <td>1</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>NetFront 3.1</td>
-              <td>Embedded devices</td>
-              <td>-</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>NetFront 3.4</td>
-              <td>Embedded devices</td>
-              <td>-</td>
-              <td>A</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>Dillo 0.8</td>
-              <td>Embedded devices</td>
-              <td>-</td>
-              <td>X</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>Links</td>
-              <td>Text only</td>
-              <td>-</td>
-              <td>X</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>Lynx</td>
-              <td>Text only</td>
-              <td>-</td>
-              <td>X</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>IE Mobile</td>
-              <td>Windows Mobile 6</td>
-              <td>-</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Misc</td>
-              <td>PSP browser</td>
-              <td>PSP</td>
-              <td>-</td>
-              <td>C</td>
-            </tr>
-            <tr>
-              <td>Other browsers</td>
-              <td>All others</td>
-              <td>-</td>
-              <td>-</td>
-              <td>U</td>
-            </tr>
+            {filteredArray.length === 0 && props.tableItems.length === 0 && (
+              <CardOrdersTableMessage
+                numCols={9}
+                message={"Không có dữ liệu"}
+              />
+            )}
+
+            {filteredArray.length === 0 && props.tableItems.length !== 0 && (
+              <CardOrdersTableMessage
+                numCols={9}
+                message={"Không có dữ liệu phù hợp với mã đơn hàng bạn nhập."}
+              />
+            )}
+
+            {filteredArray &&
+              filteredArray.map((order, i) => {
+                const {
+                  orderAddId: orderId,
+                  orderAddWarehouse: orderWarehouse,
+                  orderAddDateTime: orderDateTime,
+                  orderAddSeller: orderSeller,
+                  orderAddCustomerName: orderCustomerName,
+                  orderAddTotalMoney: orderTotalMoney,
+                  orderAddStatus: orderStatus,
+                } = order;
+
+                const dateOption = {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                };
+                let orderDate = orderDateTime.toLocaleDateString(
+                  "vi",
+                  dateOption
+                );
+
+                const timeOption = {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                };
+                let orderTime = orderDateTime.toLocaleTimeString(
+                  "vi",
+                  timeOption
+                );
+
+                return (
+                  <tr key={i} data-id={i}>
+                    <td>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={orderId}
+                          style={{ top: "2px", left: "26px" }}
+                          value={orderId}
+                          checked={ordersIdForDeletion.includes(orderId)}
+                          onChange={addIdForDeletionChangeHandler}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor={"orderCheck" + i}
+                        ></label>
+                      </div>
+                    </td>
+                    <td>{orderId}</td>
+                    <td>{orderWarehouse}</td>
+                    <td>{orderDate + " " + orderTime}</td>
+                    <td>{orderSeller}</td>
+                    <td>{orderCustomerName}</td>
+                    <td>{orderStatus}</td>
+                    <td>{orderTotalMoney + " VNĐ"}</td>
+                    <td>
+                      <div>
+                        <button
+                          className="btn btn-secondary btn-sm justify-content-center mr-2"
+                          onClick={props.onClickCopyIcon}
+                        >
+                          <FontAwesomeIcon
+                            style={{ cursor: "pointer" }}
+                            icon={faCopy}
+                          />
+                        </button>
+                        <button
+                          className="btn btn-success btn-sm justify-content-center mr-2"
+                          data-toggle="modal"
+                          data-target={".modal-for-order-id-" + i}
+                          onClick={props.onClickEditIcon}
+                        >
+                          <FontAwesomeIcon
+                            style={{ cursor: "pointer" }}
+                            icon={faPenToSquare}
+                          />
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm justify-content-center"
+                          onClick={props.onClickDeleteIcon}
+                        >
+                          <FontAwesomeIcon
+                            style={{ cursor: "pointer" }}
+                            icon={faTrash}
+                          />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
           <tfoot>
             <tr>
-              <th>Rendering engine</th>
-              <th>Browser</th>
-              <th>Platform(s)</th>
-              <th>Engine version</th>
-              <th>CSS grade</th>
+              <th>&nbsp;</th>
+              <th>Mã đơn hàng</th>
+              <th>Kho xuất</th>
+              <th>Thời điểm bán</th>
+              <th>Thu ngân</th>
+              <th>Khách hàng</th>
+              <th>Trạng thái</th>
+              <th>Tổng tiền</th>
+              <th>Tính năng</th>
             </tr>
           </tfoot>
         </table>
@@ -434,4 +293,4 @@ const CardOrdersTable = () => {
     </div>
   );
 };
-// export default CardOrdersTable;
+export default CardOrdersTable;

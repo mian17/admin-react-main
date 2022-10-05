@@ -7,11 +7,10 @@ import { FieldArray, Formik } from "formik";
 import FormField from "../../../../../../common/components/FormField";
 import FormSelectField from "../../../../../../common/components/FormSelectField";
 import { units } from "../../../../../../common/utils/units";
+
 import apiClient from "../../../../../../api";
-import {
-  tokenHeaderConfig,
-  userToken,
-} from "../../../../../../common/utils/api-config";
+import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
+
 import Merchant from "./productForm-utils/Merchant";
 import Warehouse from "./productForm-utils/Warehouse";
 import Category from "./productForm-utils/Category";
@@ -21,45 +20,44 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Categorical from "./productForm-utils/Categorical";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { ProductSchema } from "../../../../../../common/utils/validationSchema";
+// import transformProductFormData from "./server/transformProductFormData";
+import classes from "./ProductInputs.module.css";
+import FormFileUploadWithPreview from "../../../../../../common/components/FormFileUploadWithPreview";
+import productInputSubmitHandler from "./server/productInputSubmitHandler";
+import productInputEditProductSubmitHandler from "./server/productInputEditProductSubmitHandler";
+import { useNavigate } from "react-router-dom";
 
-const ProductInputs = () => {
-  // const [showCategorical, setShowCategorical] = useState(false);
+const ProductInputs = (props) => {
+  const navigate = useNavigate();
+  const [initialFormValue, setInitialFormValue] = useState(
+    new Product(
+      "",
+      "",
+      0,
 
-  const initialFormValue = new Product(
-    "",
-    "",
-    0,
+      0,
+      0,
 
-    0,
-    0,
+      "",
+      0,
+      "",
 
-    "",
-    0,
-    units[0],
+      "",
+      [],
+      [],
 
-    "",
-    [],
-    [],
-
-    "",
-    "",
-    "",
-    [new Categorical("", "", "", 0, "")]
+      "",
+      "",
+      "",
+      [new Categorical("", "", "", 0, "")]
+    )
   );
-
-  // const [fileState, setFileState] = useState([]);
-  // const fileUploadHandler = (e) => {
-  //   console.log(e.target);
-  //   // setFileState([...prevState, e.target.files])
-  // };
-
-  // console.log(warehouses);
 
   const [categories, setCategories] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
 
-  const fetchMerchantsHandler = useCallback(async () => {
+  const fetchMerchantsWarehousesCategoriesHandler = useCallback(async () => {
     try {
       await apiClient.get("/sanctum/csrf-cookie");
 
@@ -85,7 +83,6 @@ const ProductInputs = () => {
           category["children_recursive"]
         );
       });
-      // console.log(transformedCategories);
       const transformedMerchants = merchantsResponse.data.map((merchant) => {
         return new Merchant(merchant.id, merchant.name);
       });
@@ -101,9 +98,82 @@ const ProductInputs = () => {
     }
   }, []);
 
+  const fetchCurrentEditingProduct = useCallback(async () => {
+    try {
+      await apiClient.get("/sanctum/csrf-cookie");
+
+      const productResponse = await apiClient.get(
+        `api/admin/product/${props.productId}`,
+        tokenHeaderConfig
+      );
+      const {
+        category_id: apiCategoryId,
+        name: apiName,
+        brand: apiBrand,
+        summary: apiSummary,
+        desc: apiDesc,
+        detail_info: apiDetailInfo,
+        SKU: apiSKU,
+        mass: apiMass,
+        cost_price: apiCostPrice,
+        price: apiPrice,
+        unit: apiUnit,
+        status: apiStatus,
+        merchants: apiMerchants,
+        warehouses: apiWarehouses,
+        kinds: apiCategoricalInfo,
+      } = productResponse.data[0];
+
+      const transformedMerchants = apiMerchants.map((merchant) => merchant.id);
+      const transformedWarehouses = apiWarehouses.map(
+        (warehouse) => warehouse.id
+      );
+
+      const transformedCategoricalInfo = apiCategoricalInfo.map((model) => {
+        return new Categorical(
+          model.name,
+          model.hex_color,
+          model.image_1,
+          model.quantity,
+          model.image_2
+        );
+      });
+
+      setInitialFormValue(
+        new Product(
+          apiSKU,
+          apiName,
+          apiCategoryId,
+          apiPrice,
+          apiCostPrice,
+          apiBrand,
+          apiMass,
+          apiUnit,
+          apiStatus,
+          transformedMerchants,
+          transformedWarehouses,
+          apiSummary,
+          apiDesc,
+          apiDetailInfo,
+          transformedCategoricalInfo
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }, [props.productId]);
+
   useEffect(() => {
-    fetchMerchantsHandler();
-  }, [fetchMerchantsHandler]);
+    fetchMerchantsWarehousesCategoriesHandler();
+
+    if (props.productId) {
+      fetchCurrentEditingProduct();
+    }
+  }, [
+    fetchCurrentEditingProduct,
+    fetchMerchantsWarehousesCategoriesHandler,
+    props.productId,
+  ]);
 
   let categoriesOptions;
 
@@ -121,117 +191,40 @@ const ProductInputs = () => {
   ));
   const [error, setError] = useState("");
 
+  function addCategoricalInfoClickHandler(push, values) {
+    return () =>
+      push(
+        new Categorical(
+          "",
+          "",
+          "",
+          0,
+          values.categoricalInfo.length === 0 ? "" : undefined
+        )
+      );
+  }
+
   return (
     <Formik
       initialValues={initialFormValue}
       validationSchema={ProductSchema}
-      onSubmit={async (values) => {
-        // console.log(values.categoricalInfo);
-
-        try {
-          alert(JSON.stringify(values, null, 2));
-
-          // values.categoricalInfo.forEach((info, index) => {
-          //   const formData = new FormData();
-          //   formData.append("hinh", info.imageOneUrl);
-          //   info.imageOneUrl = formData;
-          // });
-
-          const {
-            productName: name,
-            productBrand: brand,
-            productCategory: category_id,
-            productSummary: summary,
-            productDescription: desc,
-            productDetailInfo: detail_info,
-            productSku: SKU,
-            productMass: mass,
-            productCostPrice: cost_price,
-            productPrice: price,
-            productUnit: unit,
-            productStatus: status,
-            productMerchant: merchant_ids,
-            productWarehouse: warehouse_ids,
-            categoricalInfo: models,
-          } = values;
-
-          const data = new FormData();
-          data.append("name", name);
-          data.append("brand", brand);
-          data.append("category_id", category_id);
-          data.append("summary", summary);
-          data.append("desc", desc);
-          data.append("detail_info", detail_info);
-          data.append("SKU", SKU);
-          data.append("mass", mass);
-          data.append("cost_price", cost_price);
-          data.append("price", price);
-          data.append("unit", unit);
-          data.append("status", status);
-          data.append("merchant_ids", JSON.stringify(merchant_ids));
-          data.append("warehouse_ids", JSON.stringify(warehouse_ids));
-
-          models.forEach((model, i) => {
-            for (const property in model) {
-              if (property === "imageOneUrl") {
-                data.append(`models[${i}][image_1]`, model[property]);
-                continue;
-              }
-              if (property === "imageTwoUrl") {
-                // if (
-                //   model[property] !== undefined ||
-                //   model[property] !== null ||
-                //   model[property].length !== 0
-                // ) {
-                data.append(`models[${i}][image_2]`, model[property]);
-                // } else {
-                //   data.append(`models[${i}][image_2]`, "");
-                // }
-                continue;
-              }
-
-              if (property !== "imageTwoUrl") {
-                data.append(`models[${i}][${property}]`, model[property]);
-              }
-            }
-          });
-
-          await apiClient.get("/sanctum/csrf-cookie");
-
-          const productResponse = await apiClient.post(
-            "api/admin/product",
-            data,
-            {
-              headers: {
-                Authorization: `Bearer ${userToken}`,
-                Accept: "application/json",
-              },
-            }
-          );
-
-          console.log(productResponse);
-        } catch (error) {
-          console.log(error);
-          setError(error.response.data.message);
-        }
-      }}
+      onSubmit={
+        props.productId
+          ? productInputEditProductSubmitHandler(
+              setError,
+              props.productId,
+              navigate
+            )
+          : productInputSubmitHandler(setError, navigate)
+      }
+      enableReinitialize
     >
-      {({
-        handleSubmit,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-        values,
-        touched,
-        isValid,
-        errors,
-      }) => (
+      {({ handleSubmit, setFieldValue, values, isValid, isSubmitting }) => (
         <Form className="card-body" onSubmit={handleSubmit}>
           <Row className="mb-3">
             {error && error.length > 0 && (
               <div
-                className="alert alert-danger"
-                style={{ width: "100%" }}
+                className={"alert alert-danger " + classes["full-width"]}
                 role="alert"
               >
                 <i className="icon fas fa-ban"></i> {error}
@@ -241,21 +234,21 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormField
               as={Col}
-              controlId="validationFormik01"
+              controlId={"validationFormik01" + props.randomId}
               label="SKU"
               type="text"
               name="productSku"
             />
             <FormField
               as={Col}
-              controlId="validationFormik02"
+              controlId={"validationFormik02" + props.randomId}
               label="Tên sản phẩm"
               type="text"
               name="productName"
             />
             <FormSelectField
               as={Col}
-              controlId="validationFormik03"
+              controlId={"validationFormik03" + props.randomId}
               label="Danh mục"
               type="text"
               name="productCategory"
@@ -268,7 +261,7 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormField
               as={Col}
-              controlId="validationFormik04"
+              controlId={"validationFormik04" + props.randomId}
               label="Đơn giá"
               type="number"
               step="1000"
@@ -277,7 +270,7 @@ const ProductInputs = () => {
             />
             <FormField
               as={Col}
-              controlId="validationFormik05"
+              controlId={"validationFormik05" + props.randomId}
               label="Giá vốn"
               type="number"
               step="1000"
@@ -288,25 +281,26 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormField
               as={Col}
-              controlId="validationFormik06"
+              controlId={"validationFormik06" + props.randomId}
               label="Hãng"
               type="text"
               name="productBrand"
             />
             <FormField
               as={Col}
-              controlId="validationFormik07"
+              controlId={"validationFormik07" + props.randomId}
               label="Khối lượng"
               type="number"
               name="productMass"
             />
             <FormSelectField
               as={Col}
-              controlId="validationFormik08"
+              controlId={"validationFormik08" + props.randomId}
               label="Đơn vị của khối lượng"
               type="text"
               name="productUnit"
             >
+              <option value="">Chọn đơn vị cho sản phẩm</option>
               {units.map((unit, i) => {
                 return (
                   <option key={i} value={unit}>
@@ -317,11 +311,12 @@ const ProductInputs = () => {
             </FormSelectField>
             <FormSelectField
               as={Col}
-              controlId="validationFormik09"
+              controlId={"validationFormik09" + props.randomId}
               label="Trạng thái sản phẩm"
               type="text"
               name="productStatus"
             >
+              <option value="">Chọn trạng thái cho sản phẩm</option>
               <option value="Ẩn">Ẩn</option>
               <option value="Hiển thị">Hiển thị</option>
             </FormSelectField>
@@ -329,7 +324,7 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormSelectField
               as={Col}
-              controlId="validationFormik10"
+              controlId={"validationFormik10" + props.randomId}
               label="Nhà bán"
               type="text"
               name="productMerchant"
@@ -345,7 +340,7 @@ const ProductInputs = () => {
             </FormSelectField>
             <FormSelectField
               as={Col}
-              controlId="validationFormik11"
+              controlId={"validationFormik11" + props.randomId}
               label="Nhà kho"
               type="text"
               name="productWarehouse"
@@ -363,7 +358,7 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormField
               as={Col}
-              controlId="validationFormik12"
+              controlId={"validationFormik12" + props.randomId}
               name="productSummary"
               label="Tóm tắt sản phẩm"
               type="text"
@@ -372,221 +367,164 @@ const ProductInputs = () => {
           <Row className="mb-3">
             <FormTextAreaField
               as={Col}
-              controlId="validationFormik13"
+              controlId={"validationFormik13" + props.randomId}
               label="Miêu tả sản phẩm"
               name="productDescription"
               additionalConfig={{
                 toolbar: ["bold", "italic", "bulletedList"],
               }}
+              initialData={initialFormValue.productDescription}
             />
           </Row>
           <Row className="mb-3">
             <FormTextAreaField
               as={Col}
-              controlId="validationFormik14"
+              controlId={"validationFormik14" + props.randomId}
               label="Thông tin chi tiết"
               name="productDetailInfo"
               additionalConfig={{ removePlugins: ["Heading"] }}
+              initialData={initialFormValue.productDetailInfo}
             />
           </Row>
-          <Row className="mb-3">
-            <FieldArray name="categoricalInfo">
-              {({ insert, remove, push }) => (
-                <>
-                  {values.categoricalInfo &&
-                    values.categoricalInfo.length > 0 &&
-                    values.categoricalInfo.map((info, index) => {
-                      return (
-                        <Row
-                          className="justify-content-md-center align-items-md-center mb-3"
-                          key={index}
-                        >
-                          <Col>
-                            <h5>
-                              Kiểu loại {index === 0 ? "mặc định" : index + 1}
-                            </h5>
-                            <Row className="align-items-center mb-3">
-                              <FormField
-                                as={Col}
-                                label={`Tên kiểu loại ${
-                                  index === 0 ? "mặc định" : index + 1
-                                }`}
-                                name={`categoricalInfo[${index}].name`}
-                                controlId="validationFormik110"
-                                type="text"
-                                placeholder="Nhập tên kiểu loại sản phẩm"
-                              />
 
-                              <FormField
-                                as={Col}
-                                label={`Mã màu kiểu loại
+          <FieldArray name="categoricalInfo">
+            {({ insert, remove, push }) => (
+              <>
+                {values.categoricalInfo &&
+                  values.categoricalInfo.length > 0 &&
+                  values.categoricalInfo.map((info, index) => {
+                    return (
+                      <Row
+                        className="justify-content-md-center align-items-md-center mb-3"
+                        key={index}
+                      >
+                        <Col>
+                          <h5>
+                            Kiểu loại {index === 0 ? "mặc định" : index + 1}
+                          </h5>
+                          <Row className="align-items-center mb-3">
+                            <FormField
+                              as={Col}
+                              label={`Tên kiểu loại ${
+                                index === 0 ? "mặc định" : index + 1
+                              }`}
+                              name={`categoricalInfo[${index}].name`}
+                              controlId={"validationFormik110" + props.randomId}
+                              type="text"
+                              placeholder="Nhập tên kiểu loại sản phẩm"
+                            />
+
+                            <FormField
+                              as={Col}
+                              label={`Mã màu kiểu loại
                                   ${index === 0 ? "mặc định" : index + 1}`}
-                                name={`categoricalInfo[${index}].colorCode`}
-                                controlId="validationFormik111"
-                                type="text"
-                                placeholder="Nhập mã màu của kiểu loại"
-                              />
+                              name={`categoricalInfo[${index}].colorCode`}
+                              controlId={"validationFormik111" + props.randomId}
+                              type="text"
+                              placeholder="Nhập mã màu của kiểu loại"
+                            />
 
-                              <FormField
-                                as={Col}
-                                label={`Số lượng sản phẩm của kiểu loại
+                            <FormField
+                              as={Col}
+                              label={`Số lượng sản phẩm của kiểu loại
                                     ${index === 0 ? "mặc định" : index + 1}`}
-                                name={`categoricalInfo[${index}].quantity`}
-                                controlId="validationFormik112"
-                                type="number"
-                                min="0"
-                                placeholder="Nhập số lượng sản phẩm của kiểu loại"
-                              />
-                            </Row>
-                            <Row>
-                              {/*  <FormField*/}
-                              {/*    as={Col}*/}
-                              {/*    label={`Hình cover cho kiểu loại*/}
-                              {/*${index === 0 ? " mặc định" : index + 1}`}*/}
-                              {/*    name={`categoricalInfo.${index}.imageOneUrl`}*/}
-                              {/*    controlId="validationFormik113"*/}
-                              {/*    type="file"*/}
-                              {/*    onChange={(e) => {*/}
-                              {/*      console.log(e.currentTarget.files[0]);*/}
-
-                              {/*      // setFieldValue(*/}
-                              {/*      //   `categoricalInfo.${index}.imageOneUrl`,*/}
-                              {/*      //   e.currentTarget.files[0]*/}
-                              {/*      // );*/}
-                              {/*    }}*/}
-                              {/*  />*/}
-
-                              <Col>
-                                <Form.Label>
-                                  Hình cover cho kiểu loại{" "}
-                                  {index === 0 ? " mặc định" : index + 1}
-                                </Form.Label>
-                                <Form.Control
-                                  name={`categoricalInfo.${index}.imageOneUrl`}
-                                  type="file"
-                                  onChange={(e) => {
-                                    const file = e.currentTarget.files[0];
-
-                                    setFieldValue(
-                                      `categoricalInfo.${index}.imageOneUrl`,
-                                      file
-                                    );
-
-                                    // setFileState((prevState) => {
-                                    //   const newState = [...prevState];
-                                    //   newState.push(file);
-                                    //   return newState;
-                                    // });
-                                  }}
-                                />
-
-                                {values.categoricalInfo[index].imageOneUrl && (
-                                  <img
-                                    style={{ width: "240px", height: "auto" }}
-                                    src={
-                                      values.categoricalInfo[index]
-                                        .imageOneUrl &&
-                                      URL.createObjectURL(
-                                        values.categoricalInfo[index]
-                                          .imageOneUrl
-                                      )
-                                    }
-                                    alt=""
-                                  />
-                                )}
-                              </Col>
-
-                              {index === 0 && (
-                                // <FormField
-                                //   as={Col}
-                                //   label={`Hình on hover cho kiểu loại
-                                //       ${index === 0 ? " mặc định" : index + 1}`}
-                                //   name={`categoricalInfo.${index}.imageTwoUrl`}
-                                //   controlId="validationFormik115"
-                                //   type="file"
-                                //
-
-                                <Col>
-                                  <Form.Label>
-                                    Hình on hover cho kiểu loại{" "}
-                                    {index === 0 ? " mặc định" : index + 1}
-                                  </Form.Label>
-                                  <Form.Control
-                                    name={`categoricalInfo.${index}.imageTwoUrl`}
-                                    type="file"
-                                    onChange={(e) => {
-                                      const file = e.currentTarget.files[0];
-
-                                      setFieldValue(
-                                        `categoricalInfo.${index}.imageTwoUrl`,
-                                        file
-                                      );
-                                    }}
-                                  />
-
-                                  {values.categoricalInfo[index]
-                                    .imageTwoUrl && (
-                                    <img
-                                      style={{
-                                        width: "240px",
-                                        height: "auto",
-                                      }}
-                                      src={
-                                        values.categoricalInfo[index]
-                                          .imageTwoUrl &&
-                                        URL.createObjectURL(
-                                          values.categoricalInfo[index]
-                                            .imageTwoUrl
-                                        )
-                                      }
-                                      alt=""
-                                    />
-                                  )}
-                                </Col>
-                              )}
-                            </Row>
-                          </Col>
-                          <Col md="auto">
-                            <Button
-                              style={{
-                                height: "fit-content",
-                                borderRadius: "50%",
+                              name={`categoricalInfo[${index}].quantity`}
+                              controlId={"validationFormik112" + props.randomId}
+                              type="number"
+                              min="0"
+                              placeholder="Nhập số lượng sản phẩm của kiểu loại"
+                            />
+                          </Row>
+                          <Row>
+                            <FormFileUploadWithPreview
+                              label={`Hình cover cho kiểu loại ${
+                                index === 0 ? " mặc định" : index + 1
+                              }`}
+                              name={`categoricalInfo.${index}.imageOneUrl`}
+                              desiredFunction={(e) => {
+                                const file = e.currentTarget.files[0];
+                                setFieldValue(
+                                  `categoricalInfo.${index}.imageOneUrl`,
+                                  file
+                                );
                               }}
-                              className="btn-danger"
-                              onClick={() => remove(index)}
-                            >
-                              <FontAwesomeIcon icon={solid("trash-can")} />
-                            </Button>
-                          </Col>
-                        </Row>
-                      );
-                    })}
-                  <div className="text-center">
+                              image={values.categoricalInfo[index].imageOneUrl}
+                            />
+
+                            {index === 0 && (
+                              <FormFileUploadWithPreview
+                                label={`Hình on hover cho kiểu loại ${
+                                  index === 0 ? " mặc định" : index + 1
+                                }`}
+                                name={`categoricalInfo.${index}.imageTwoUrl`}
+                                desiredFunction={(e) => {
+                                  const file = e.currentTarget.files[0];
+
+                                  setFieldValue(
+                                    `categoricalInfo.${index}.imageTwoUrl`,
+                                    file
+                                  );
+                                }}
+                                image={
+                                  values.categoricalInfo[index].imageTwoUrl
+                                }
+                              />
+                            )}
+                          </Row>
+                        </Col>
+                        <Col md="auto">
+                          <Button
+                            style={{
+                              height: "fit-content",
+                              borderRadius: "50%",
+                            }}
+                            className="btn-danger"
+                            onClick={() => remove(index)}
+                          >
+                            <FontAwesomeIcon icon={solid("trash-can")} />
+                          </Button>
+                        </Col>
+                      </Row>
+                    );
+                  })}
+
+                <Row style={{ justifyContent: "center" }}>
+                  <div style={{ textAlign: "center" }}>
                     <Button
-                      onClick={() =>
-                        push(
-                          new Categorical(
-                            "",
-                            "",
-                            "",
-                            0,
-                            values.categoricalInfo.length === 0 ? "" : undefined
-                          )
-                        )
-                      }
+                      style={{ textAlign: "center" }}
+                      onClick={addCategoricalInfoClickHandler(push, values)}
                     >
                       Thêm kiểu loại
                     </Button>
                   </div>
-                </>
-              )}
-            </FieldArray>
-          </Row>
+                </Row>
+              </>
+            )}
+          </FieldArray>
 
-          <pre>{JSON.stringify(values, null, 2)}</pre>
-          <Button variant="primary" type="submit" disabled={!isValid}>
-            Gửi thông tin
-          </Button>
+          {/*<pre>{JSON.stringify(values, null, 2)}</pre>*/}
+          <div style={{ textAlign: "right" }}>
+            {props.productId && (
+              <Button variant="secondary" onClick={props.closeModel}>
+                Đóng
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={!isValid || isSubmitting}
+            >
+              {props.productId ? "Cập nhật sản phẩm" : "Gửi thông tin"}
+              {isSubmitting && (
+                <div
+                  className="spinner-border text-light spinner-border-sm ml-1"
+                  role="status"
+                >
+                  <span className="sr-only">Loading...</span>
+                </div>
+              )}
+            </Button>
+          </div>
         </Form>
       )}
     </Formik>

@@ -27,6 +27,7 @@ code {
   transform: translate(-50%, -50%);
   background-color: #fff;
   box-shadow: 0 0 20px 5px #555;
+  z-index: 9999;
 }
 
 /*@media (max-width: 992px) {*/

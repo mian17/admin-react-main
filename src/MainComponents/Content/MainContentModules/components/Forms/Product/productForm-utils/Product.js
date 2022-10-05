@@ -19,8 +19,6 @@ export default class Product {
     productDescription,
     productDetailInfo,
 
-    // productColorCode,
-    // hasCategoricalInputs,
     categoricalInfo
   ) {
     this.productSku = productSku;
@@ -41,26 +39,6 @@ export default class Product {
     this.productDescription = productDescription;
     this.productDetailInfo = productDetailInfo;
 
-    // this.productColorCode = productColorCode;
-    // this.hasCategoricalInputs = hasCategoricalInputs;
     this.categoricalInfo = categoricalInfo;
   }
 }
-// {
-//     productId: "",
-//         productName: "",
-//     productQuantity: 0,
-//     productPrice: 0,
-//     productColorCode: "",
-//     productCostPrice: 0,
-//     hasCategoricalInputs: false,
-//     categoricalInfo: [],
-//     productCategory: 0,
-//     productStatus: 0,
-//     productMerchant: 0,
-//     productBrand: "",
-//     productSku: "",
-//     productMass: 0,
-//     productUnit: 0,
-//     productWarehouse: 0,
-// }

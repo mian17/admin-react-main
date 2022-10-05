@@ -24,8 +24,11 @@ import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import ProductInTable from "./cardProductsTableUtils/ProductInTable";
 import { backendServerPath } from "../../../../../../utilities/backendServerPath";
 import classes from "./CardProductsTable.module.css";
+import { useNavigate } from "react-router-dom";
 
 const CardProductsTable = () => {
+  const navigate = useNavigate();
+
   // Modal State
   const [show, setShow] = useState(false);
   // Modal Handlers
@@ -51,7 +54,7 @@ const CardProductsTable = () => {
         `api/admin/product?page=${currentPage}&filter=${filter}`,
         tokenHeaderConfig
       );
-      console.log(response.data);
+      // console.log(response.data);
 
       setLastPage(response.data.last_page);
       const transformedProducts = response.data.data.map((product) => {
@@ -147,7 +150,7 @@ const CardProductsTable = () => {
               </button>
               <button
                 className="btn btn-danger"
-                onClick={() => deleteInfoHandler(rowItemId)}
+                onClick={() => moveProductToTrash(rowItemId)}
               >
                 <FontAwesomeIcon icon={solid("trash-can")} />
               </button>
@@ -161,9 +164,8 @@ const CardProductsTable = () => {
 
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
-
     for (const property in valueObj) {
-      if (property === "functions") continue;
+      if (property === "functions" || property === "img") continue;
       readyForClipboard += `${valueObj[property]}\t`;
     }
     navigator.clipboard.writeText(readyForClipboard).then(() => {
@@ -176,15 +178,26 @@ const CardProductsTable = () => {
     setShow(true);
   }
 
-  async function deleteInfoHandler(productIdToDelete) {
+  async function moveProductToTrash(productId) {
     const result = await confirm(
-      "Bạn có chắc chắn muốn xóa sản phẩm này?",
+      "Bạn có chắc chắn muốn đưa sản phẩm này vào thùng rác?",
       confirmBoxOptions
     );
     if (result) {
       setData((prevState) =>
-        prevState.filter((product) => product.id !== productIdToDelete)
+        prevState.filter((product) => product.id !== productId)
       );
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        apiClient
+          .get(`api/admin/product-to-trash/${productId}`, tokenHeaderConfig)
+          .then((response) => {
+            console.log(response);
+            navigate(0);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      });
     }
   }
 
@@ -210,7 +223,6 @@ const CardProductsTable = () => {
     useGroupBy,
     useSortBy,
     useExpanded,
-    // usePagination,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => {
@@ -263,8 +275,6 @@ const CardProductsTable = () => {
       setCurrentPage((previousPage) => previousPage - 1);
     }
   }
-
-  console.log(currentPage);
 
   function firstPageHandler() {
     setCurrentPage(1);

@@ -13,6 +13,7 @@ const FormField = ({
   step,
   min,
   placeholder,
+  readOnly,
 }) => {
   return (
     <Field name={name}>
@@ -34,6 +35,7 @@ const FormField = ({
                 isInvalid={isInvalid}
                 feedback={form.errors[field.name]}
                 placeholder={placeholder ? placeholder : null}
+                readOnly={readOnly ? readOnly : false}
               />
 
               <Form.Control.Feedback type="invalid">

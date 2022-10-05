@@ -241,3 +241,29 @@ export const ProductSchema = Yup.object().shape({
   //   )
   //   .min(1, "Phải có ít nhất 1 kiểu loại"),
 });
+
+export const CategorySchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, "Tên danh mục mới ngắn quá")
+    .max(255, "Tên danh mục mới dài quá")
+    .required("Bạn cần nhập tên danh mục mới mà bạn cần thêm"),
+});
+
+export const OrderSchema = Yup.object().shape({
+  receiverName: Yup.string()
+    .min(2, "Tên người nhận ngắn quá")
+    .max(255, "Tên người nhận dài quá")
+    .required("Bạn cần nhập tên của người nhận"),
+  receiverAddress: Yup.string()
+    .min(2, "Thông tin địa chỉ ngắn quá")
+    .max(255, "Thông tin địa chỉ dài quá")
+    .required("Bạn cần nhập thông tin địa chỉ của người nhận"),
+  receiverPhoneNumber: Yup.string()
+    .matches(phoneRegex, "Dữ liệu không đúng định dạng của số điện thoại")
+    .trim()
+    .required("Bạn cần nhập số điện thoại của người nhận"),
+  receiverEmail: Yup.string()
+    .email("Thông tin bạn nhập không đúng định dạng email")
+    .trim()
+    .required("Bạn cần phải nhập email của người nhận"),
+});

@@ -1,0 +1,28 @@
+.category-img {
+    width: 240px;
+    height: auto;
+}
+
+.img {
+    width: 100%;
+    height: 100%;
+}
+
+.table {
+    position: relative;
+    border-collapse: collapse;
+}
+
+.table-text-center {
+    vertical-align: middle !important;
+    text-align: center;
+}
+
+
+.sticky-table-header {
+    text-align: center;
+    background: white;
+    position: sticky !important;
+    top: 0; /* Don't forget this, required for the stickiness */
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}

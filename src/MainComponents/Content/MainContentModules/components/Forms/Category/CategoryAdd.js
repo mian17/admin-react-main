@@ -1,10 +1,10 @@
-import ProductInputs from "./ProductInputs";
+import CategoryInputs from "./CategoryInputs";
 
-const ProductAdd = () => {
+const CategoryAdd = () => {
   return (
     <div className="card card-primary">
       <div className="card-header">
-        <h3 className="card-title">Tạo sản phẩm</h3>
+        <h3 className="card-title">Thêm danh mục</h3>
         <div className="card-tools">
           <button
             type="button"
@@ -15,8 +15,9 @@ const ProductAdd = () => {
           </button>
         </div>
       </div>
-      <ProductInputs randomId="form" />
+      <CategoryInputs ramdonId="category" />
     </div>
   );
 };
-export default ProductAdd;
+
+export default CategoryAdd;

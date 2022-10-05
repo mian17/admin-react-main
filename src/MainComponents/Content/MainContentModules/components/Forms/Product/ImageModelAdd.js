@@ -1,10 +1,10 @@
-import ProductInputs from "./ProductInputs";
+import ImageModelInputs from "./ImageModelInputs";
 
-const ProductAdd = () => {
+const ImageModelAdd = () => {
   return (
     <div className="card card-primary">
       <div className="card-header">
-        <h3 className="card-title">Tạo sản phẩm</h3>
+        <h3 className="card-title">Thêm hình ảnh cho kiểu loại của sản phẩm</h3>
         <div className="card-tools">
           <button
             type="button"
@@ -15,8 +15,8 @@ const ProductAdd = () => {
           </button>
         </div>
       </div>
-      <ProductInputs randomId="form" />
+      <ImageModelInputs randomId="image" />
     </div>
   );
 };
-export default ProductAdd;
+export default ImageModelAdd;

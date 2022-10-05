@@ -1,10 +1,16 @@
 import Form from "react-bootstrap/Form";
 import React from "react";
-import { Col, Row } from "react-bootstrap";
+import { Col } from "react-bootstrap";
 import classes from "./FormFileUploadWithPreview.module.css";
 import { backendServerPath } from "../../utilities/backendServerPath";
 
-const FormFileUploadWithPreview = ({ label, name, desiredFunction, image }) => {
+const FormFileUploadWithMultiplePreview = ({
+  label,
+  name,
+  desiredFunction,
+  images,
+}) => {
+  // console.log(images);
   return (
     <Col>
       <Form.Label>{label}</Form.Label>
@@ -12,13 +18,14 @@ const FormFileUploadWithPreview = ({ label, name, desiredFunction, image }) => {
         name={name}
         type="file"
         onChange={desiredFunction}
-        className="mb-3"
+        multiple
       />
 
-      <Row>
-        {image && (
-          <Col>
+      {images.length > 0 &&
+        images.map((image, index) => {
+          return (
             <img
+              key={index}
               className={classes["image-preview"]}
               src={
                 typeof image === "object"
@@ -27,10 +34,9 @@ const FormFileUploadWithPreview = ({ label, name, desiredFunction, image }) => {
               }
               alt=""
             />
-          </Col>
-        )}
-      </Row>
+          );
+        })}
     </Col>
   );
 };
-export default FormFileUploadWithPreview;
+export default FormFileUploadWithMultiplePreview;

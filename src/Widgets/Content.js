@@ -8,6 +8,7 @@ import ProductContent from "../pages/ProductContent";
 import { UserContent } from "../pages/UserContent";
 import { useContext } from "react";
 import AuthContext from "../store/auth-context";
+import CategoryContent from "../pages/CategoryContent";
 
 const Content = () => {
   const { loggedIn } = useContext(AuthContext);
@@ -53,6 +54,17 @@ const Content = () => {
                 </>
               }
             />
+            <Route
+              path="/category"
+              element={
+                <>
+                  <Navbar />
+                  <MainSidebar />
+                  <CategoryContent />
+                </>
+              }
+            />
+
             <Route
               path="/user"
               element={

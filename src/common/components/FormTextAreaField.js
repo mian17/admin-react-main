@@ -11,6 +11,7 @@ const FormTextAreaField = ({
   label,
   name,
   additionalConfig,
+  initialData,
 }) => {
   return (
     <>
@@ -37,7 +38,7 @@ const FormTextAreaField = ({
                   // ],
                 }}
                 editor={ClassicEditor}
-                data=""
+                data={initialData && initialData.length > 0 ? initialData : ""}
                 onReady={(editor) => {
                   // You can store the "editor" and use when it is needed.
                   // console.log("Editor is ready to use!", editor);
@@ -47,12 +48,12 @@ const FormTextAreaField = ({
                   // console.log({ event, editor, data });
                   form.setFieldValue(field.name, editor.getData());
                 }}
-                onBlur={(event, editor) => {
-                  console.log("Blur.", editor);
-                }}
-                onFocus={(event, editor) => {
-                  console.log("Focus.", editor);
-                }}
+                // onBlur={(event, editor) => {
+                //   console.log("Blur.", editor);
+                // }}
+                // onFocus={(event, editor) => {
+                //   console.log("Focus.", editor);
+                // }}
                 isValid={form.touched[field.name] && isValid}
                 isInvalid={isInvalid}
                 feedback={form.errors[field.name]}
