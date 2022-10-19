@@ -67,11 +67,11 @@ const ProductInputs = (props) => {
       );
 
       const warehousesResponse = await apiClient.get(
-        "api/admin/warehouse",
+        "api/admin/warehouse-product",
         tokenHeaderConfig
       );
       const merchantsResponse = await apiClient.get(
-        "api/admin/merchant",
+        "api/admin/merchant-product",
         tokenHeaderConfig
       );
       // console.log(categoriesResponse.data);
@@ -83,6 +83,7 @@ const ProductInputs = (props) => {
           category["children_recursive"]
         );
       });
+      console.log(merchantsResponse);
       const transformedMerchants = merchantsResponse.data.map((merchant) => {
         return new Merchant(merchant.id, merchant.name);
       });
@@ -94,7 +95,7 @@ const ProductInputs = (props) => {
       setMerchants(transformedMerchants);
       setWarehouses(transformedWarehouses);
     } catch (error) {
-      console.log(error.response.data);
+      console.log(error);
     }
   }, []);
 

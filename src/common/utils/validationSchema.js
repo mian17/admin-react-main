@@ -267,3 +267,41 @@ export const OrderSchema = Yup.object().shape({
     .trim()
     .required("Bạn cần phải nhập email của người nhận"),
 });
+
+export const WarehouseSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, "Tên nhà kho ngắn quá")
+    .max(255, "Tên nhà kho dài quá")
+    .required("Bạn cần nhập tên nhà kho"),
+  address: Yup.string()
+    .min(2, "Thông tin địa chỉ ngắn quá")
+    .max(255, "Thông tin địa chỉ dài quá")
+    .required("Bạn cần nhập thông tin địa chỉ"),
+  phoneNumber: Yup.string()
+    .matches(phoneRegex, "Dữ liệu không đúng định dạng của số điện thoại")
+    .trim()
+    .required("Bạn cần nhập số điện thoại của nhà kho"),
+  email: Yup.string()
+    .email("Thông tin bạn nhập không đúng định dạng email")
+    .trim()
+    .required("Bạn cần phải nhập email của nhà kho"),
+});
+
+export const MerchantSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, "Tên nhà bán ngắn quá")
+    .max(255, "Tên nhà bán dài quá")
+    .required("Bạn cần nhập tên nhà bán"),
+  address: Yup.string()
+    .min(2, "Thông tin địa chỉ ngắn quá")
+    .max(255, "Thông tin địa chỉ dài quá")
+    .required("Bạn cần nhập thông tin địa chỉ"),
+  phoneNumber: Yup.string()
+    .matches(phoneRegex, "Dữ liệu không đúng định dạng của số điện thoại")
+    .trim()
+    .required("Bạn cần nhập số điện thoại của nhà kho"),
+  email: Yup.string()
+    .email("Thông tin bạn nhập không đúng định dạng email")
+    .trim()
+    .required("Bạn cần phải nhập email của nhà bán"),
+});

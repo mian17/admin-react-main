@@ -1,10 +1,10 @@
 export default class UserInTable {
-  constructor(id, name, phoneNumber, defaultAddress, role, totalMoneySpent) {
-    this.id = id;
+  constructor(uuid, name, phoneNumber, address, totalMoneySpent) {
+    this.uuid = uuid;
     this.name = name;
     this.phoneNumber = phoneNumber;
-    this.defaultAddress = defaultAddress;
-    this.role = role;
+    this.address = address;
+
     this.totalMoneySpent = totalMoneySpent;
   }
 }

@@ -11,6 +11,7 @@ import OrderInTable from "./cardOrdersTable-utils/OrderInTable";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditOrderDetails from "./ModalEditOrderDetails";
 import {useNavigate} from "react-router-dom";
+import {formatMoney} from "../../../../../../common/utils/helperFunctions";
 
 // const CardOrdersTableMessage = (props) => {
 //   return (
@@ -144,6 +145,18 @@ const CardOrdersTable = () => {
       {
         Header: "Tổng tiền",
         accessor: "totalMoney",
+
+        Cell: ({ cell, row }) => {
+          const totalMoneySpent = cell.row.values.totalMoney;
+
+          return (
+            <>
+              {!isNaN(totalMoneySpent)
+                ? formatMoney(totalMoneySpent)
+                : totalMoneySpent}
+            </>
+          );
+        },
       },
       {
         Header: "Chức năng",
@@ -191,7 +204,6 @@ const CardOrdersTable = () => {
   const [lastPage, setLastPage] = useState(2);
 
   const [filter, setFilter] = useState("");
-
 
   const fetchOrders = useCallback(async () => {
     try {

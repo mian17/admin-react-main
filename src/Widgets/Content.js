@@ -9,6 +9,8 @@ import { UserContent } from "../pages/UserContent";
 import { useContext } from "react";
 import AuthContext from "../store/auth-context";
 import CategoryContent from "../pages/CategoryContent";
+import WarehouseContent from "../pages/WarehouseContent";
+import MerchantContent from "../pages/MerchantContent";
 
 const Content = () => {
   const { loggedIn } = useContext(AuthContext);
@@ -72,6 +74,28 @@ const Content = () => {
                   <Navbar />
                   <MainSidebar />
                   <UserContent />
+                </>
+              }
+            />
+
+            <Route
+              path="/warehouse"
+              element={
+                <>
+                  <Navbar />
+                  <MainSidebar />
+                  <WarehouseContent />
+                </>
+              }
+            />
+
+            <Route
+              path="/merchant"
+              element={
+                <>
+                  <Navbar />
+                  <MainSidebar />
+                  <MerchantContent />
                 </>
               }
             />

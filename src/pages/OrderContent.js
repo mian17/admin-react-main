@@ -6,7 +6,6 @@ import ContentHeader from "../MainComponents/Content/ContentHeader";
 // FOR GETTING DATA FROM DATABASE IN THE FUTURE
 
 const OrderContent = () => {
-
   return (
     <>
       <div className="content-wrapper">

@@ -204,7 +204,7 @@ const CardProductsTable = () => {
   const deleteBulkInfoHandler = async () => {
     // a variable from react table library
     const bulkId = selectedFlatRows.map((row) => row.original.id);
-    console.log(bulkId);
+    // console.log(bulkId);
 
     const result = await confirm(
       "Bạn có chắc chắn muốn xóa các sản phẩm này?",
@@ -306,9 +306,9 @@ const CardProductsTable = () => {
             >
               Xuất file Excel
             </Button>
-            <Button variant="danger" onClick={deleteBulkInfoHandler}>
-              Xóa các danh mục đã chọn
-            </Button>
+            {/*<Button variant="danger" onClick={deleteBulkInfoHandler}>*/}
+            {/*  Xóa các danh mục đã chọn*/}
+            {/*</Button>*/}
           </div>
           <div className="col-md-6 text-right">
             {/*<GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />*/}

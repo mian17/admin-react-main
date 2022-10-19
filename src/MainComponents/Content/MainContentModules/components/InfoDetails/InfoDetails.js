@@ -1,10 +1,14 @@
+import { formatMoney } from "../../../../../common/utils/helperFunctions";
+
 const InfoDetails = (props) => {
   return (
     <div className="col-lg-3 col-6">
       <div className={`small-box ${props.bootstrapBackground}`}>
         <div className="inner">
           <h3>
-            {props.num}
+            {props.num && props.num > 100000
+              ? formatMoney(props.num)
+              : props.num}
             {props.unit ? (
               <sup style={{ fontSize: "20px" }}>{props.unit}</sup>
             ) : (
@@ -17,9 +21,9 @@ const InfoDetails = (props) => {
         <div className="icon">
           <i className={`${props.icon}`}></i>
         </div>
-        <a href="/#" className="small-box-footer">
-          Xem thêm <i className="fas fa-arrow-circle-right"></i>
-        </a>
+        {/*<a href="/#" className="small-box-footer">*/}
+        {/*Xem thêm <i className="fas fa-arrow-circle-right"></i>*/}
+        {/*</a>*/}
       </div>
     </div>
   );
