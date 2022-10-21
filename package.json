@@ -19,6 +19,8 @@
     "chart.js": "^3.9.1",
     "date-fns": "^2.28.0",
     "formik": "^2.2.9",
+    "laravel-echo": "^1.14.0",
+    "pusher-js": "^7.4.0",
     "react": "^18.1.0",
     "react-bootstrap": "^2.5.0",
     "react-chartjs-2": "^4.3.1",

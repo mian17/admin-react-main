@@ -20,6 +20,7 @@ const generalComponents = [
   { id: 4, icon: "fas fa-users", label: "Người dùng", path: "/user" },
   { id: 5, icon: "fas fa-warehouse", label: "Nhà kho", path: "/warehouse" },
   { id: 6, icon: "fas fa-truck", label: "Nhà bán", path: "/merchant" },
+  { id: 7, icon: "fas fa-comment", label: "Hỗ trợ chat", path: "/chat" },
   // { id: 5, icon: "fas fa-warehouse", label: "Tồn kho" },
   // { id: 6, icon: "fas fa-truck-loading", label: "Doanh số" },
   // { id: 7, icon: "fas fa-file-alt", label: "Thu chi" },

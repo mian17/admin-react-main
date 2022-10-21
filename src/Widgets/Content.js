@@ -11,6 +11,7 @@ import AuthContext from "../store/auth-context";
 import CategoryContent from "../pages/CategoryContent";
 import WarehouseContent from "../pages/WarehouseContent";
 import MerchantContent from "../pages/MerchantContent";
+import ChatContent from "../pages/ChatContent";
 
 const Content = () => {
   const { loggedIn } = useContext(AuthContext);
@@ -96,6 +97,18 @@ const Content = () => {
                   <Navbar />
                   <MainSidebar />
                   <MerchantContent />
+                </>
+              }
+            />
+
+            <Route
+              path="/chat"
+              element={
+                <>
+                  <Navbar />
+                  <MainSidebar />
+                  {/*<MerchantContent />*/}
+                  <ChatContent />
                 </>
               }
             />
