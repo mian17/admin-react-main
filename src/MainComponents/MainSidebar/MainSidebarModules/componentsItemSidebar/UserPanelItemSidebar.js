@@ -17,7 +17,7 @@ const UserPanelItemSidebar = () => {
         },
       });
 
-      console.log(response);
+      // console.log(response);
       const { avatar, name } = response.data.user;
       // console.log(avatar, name);
       setUserInfo({ avatar: backendServerPath + avatar, name: name });

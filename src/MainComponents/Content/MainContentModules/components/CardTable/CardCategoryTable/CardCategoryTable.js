@@ -4,7 +4,6 @@ import { DATA as DUMP_DATA } from "./cardCategoryTable-utils/data";
 import { useGlobalFilter, useTable } from "react-table";
 import { Col, Row, Table } from "react-bootstrap";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import Category from "./cardCategoryTable-utils/Category";
 import { backendServerPath } from "../../../../../../utilities/backendServerPath";
 
@@ -93,9 +92,17 @@ const CardCategoryTable = () => {
         "Bạn có muốn xóa danh mục này VĨNH VIỄN không?"
       );
       if (result) {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
         apiClient.get("/sanctum/csrf-cookie").then(() => {
           apiClient
-            .delete(`api/admin/category/${rowItemId}`, tokenHeaderConfig)
+            .delete(`api/admin/category/${rowItemId}`, {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            })
             .then((response) => {
               alert(response.data.message);
               navigate(0);
@@ -111,11 +118,14 @@ const CardCategoryTable = () => {
 
   const fetchCategories = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
-      const categoriesResponse = await apiClient.get(
-        "api/admin/category",
-        tokenHeaderConfig
-      );
+      const categoriesResponse = await apiClient.get("api/admin/category", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       const transformedCategories = [];
 
       categoriesResponse.data.forEach((category) => {

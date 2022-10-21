@@ -20,7 +20,6 @@ import Button from "react-bootstrap/Button";
 import ModalEditProduct from "../../Forms/Product/ModalEditProduct";
 import { CSVLink } from "react-csv";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import ProductInTable from "./cardProductsTableUtils/ProductInTable";
 import { backendServerPath } from "../../../../../../utilities/backendServerPath";
 import classes from "./CardProductsTable.module.css";
@@ -49,10 +48,16 @@ const CardProductsTable = () => {
   // React Table Handler
   const fetchProducts = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
       const response = await apiClient.get(
         `api/admin/product?page=${currentPage}&filter=${filter}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       // console.log(response.data);
 
@@ -188,8 +193,17 @@ const CardProductsTable = () => {
         prevState.filter((product) => product.id !== productId)
       );
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         apiClient
-          .get(`api/admin/product-to-trash/${productId}`, tokenHeaderConfig)
+          .get(`api/admin/product-to-trash/${productId}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             console.log(response);
             navigate(0);

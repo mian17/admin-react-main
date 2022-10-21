@@ -1,11 +1,10 @@
 import classes from "./Login.module.css";
 import { useContext, useState } from "react";
-import apiClient from "../../../../../../../api";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { SignInSchema } from "../../../../../../../common/utils/validationSchema";
 import AuthContext from "../../../../../../../store/auth-context";
 import { useNavigate } from "react-router-dom";
-import { laravelSanctumConfig } from "../../../../../../../common/utils/api-config";
+import signInHandler from "./server/signInHandler";
 
 const LogIn = () => {
   // useEffect(() => {
@@ -45,36 +44,48 @@ const LogIn = () => {
   const [error, setError] = useState("");
   const { setLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
-  const logInHandler = async (values) => {
-    try {
-      await apiClient.get("/sanctum/csrf-cookie");
+  // const logInHandler = async (values) => {
+  // try {
+  //   await apiClient.get("/sanctum/csrf-cookie");
+  //
+  //   const response = await apiClient.post(
+  //     "/admin/login",
+  //     {
+  //       email: values.email,
+  //       password: values.password,
+  //     },
+  //     laravelSanctumConfig
+  //   );
+  //
+  //   if (response.status === 201) {
+  //     setError(null);
+  //     localStorage.setItem(
+  //       "personalAccessToken",
+  //       JSON.stringify(response.data.token)
+  //     );
+  //     localStorage.setItem("loggedIn", JSON.stringify(true));
+  //     setLoggedIn({
+  //       loggedIn: true,
+  //       personalAccessToken: JSON.parse(
+  //         localStorage.getItem("personalAccessToken")
+  //       ),
+  //     });
+  //     // console.log(tokenHeaderConfig);
+  //     navigate("/");
+  //   }
+  // } catch (error) {
+  //   setError(error.response.data);
+  // }
+  // };
 
-      const response = await apiClient.post(
-        "/admin/login",
-        {
-          email: values.email,
-          password: values.password,
-        },
-        laravelSanctumConfig
-      );
+  const handleSubmit = (values) => {
+    const userInput = {
+      email: values.email,
+      password: values.password,
+    };
 
-      localStorage.setItem(
-        "personalAccessToken",
-        JSON.stringify(response.data.token)
-      );
-      localStorage.setItem("loggedIn", JSON.stringify(true));
-      setLoggedIn({
-        loggedIn: true,
-        personalAccessToken: JSON.parse(
-          localStorage.getItem("personalAccessToken")
-        ),
-      });
-      navigate("/");
-    } catch (error) {
-      setError(error.response.data);
-    }
+    signInHandler(userInput, navigate, setError, setLoggedIn);
   };
-
   return (
     <div className={classes["center_div"]}>
       <div className="h-100 d-flex align-items-center justify-content-center">
@@ -98,7 +109,7 @@ const LogIn = () => {
                   password: "",
                 }}
                 validationSchema={SignInSchema}
-                onSubmit={logInHandler}
+                onSubmit={handleSubmit}
               >
                 {({ isSubmitting }) => (
                   <Form>

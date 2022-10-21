@@ -1,7 +1,6 @@
 import InfoDetails from "./components/InfoDetails/InfoDetails";
 import { useCallback, useEffect, useState } from "react";
 import apiClient from "../../../api";
-import { tokenHeaderConfig } from "../../../common/utils/api-config";
 
 const infoDetailsConfig = [
   {
@@ -41,10 +40,16 @@ const infoDetailsConfig = [
 const InfoDetailsMainContent = () => {
   const [data, setData] = useState([]);
 
-  const fetchDasboardInfo = useCallback(async () => {
+  const fetchDashboardInfo = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get("api/admin/", tokenHeaderConfig);
+      const response = await apiClient.get("api/admin/", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       // console.log(response.data);
       const transformedData = [];
       for (const property in response.data) {
@@ -57,8 +62,8 @@ const InfoDetailsMainContent = () => {
   }, []);
 
   useEffect(() => {
-    fetchDasboardInfo();
-  }, [fetchDasboardInfo]);
+    fetchDashboardInfo();
+  }, [fetchDashboardInfo]);
   return (
     <div className="row">
       {infoDetailsConfig.map((info, index) => (

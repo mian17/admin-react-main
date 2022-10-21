@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import { copyInfoHandler } from "../../../../../../common/utils/tableFunctions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
@@ -44,11 +43,17 @@ const CardMerchantTable = () => {
     setIsLoading(true);
     setData([]);
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
 
       const response = await apiClient.get(
         `api/admin/merchant?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       setLastPage(response.data.last_page);
       console.log(response);
@@ -156,8 +161,16 @@ const CardMerchantTable = () => {
     if (result) {
       setData((prevState) => prevState.filter((item) => item.id !== itemId));
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
         apiClient
-          .get(`api/admin/merchant-to-trash/${itemId}`, tokenHeaderConfig)
+          .get(`api/admin/merchant-to-trash/${itemId}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             console.log(response);
             navigate(0);

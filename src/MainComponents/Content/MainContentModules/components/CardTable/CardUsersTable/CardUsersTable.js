@@ -17,7 +17,6 @@ import { CSVLink } from "react-csv";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalUserDetails from "../../Forms/User/ModalUserDetails";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import UserInTable from "./cardUsersTable-utils/UserInTable";
 import { formatMoney } from "../../../../../../common/utils/helperFunctions";
 
@@ -129,8 +128,17 @@ const CardUsersTable = () => {
         prevState.filter((item) => item.uuid !== userUuid)
       );
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         apiClient
-          .get(`api/admin/user-to-tra/${userUuid}`, tokenHeaderConfig)
+          .get(`api/admin/user-to-tra/${userUuid}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             alert(response.data.message);
           })
@@ -232,11 +240,18 @@ const CardUsersTable = () => {
     setIsLoading(true);
     setData([]);
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
 
       const response = await apiClient.get(
         `api/admin/user?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       setLastPage(response.data.last_page);
 

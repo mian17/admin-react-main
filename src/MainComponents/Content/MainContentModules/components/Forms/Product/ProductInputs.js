@@ -9,7 +9,6 @@ import FormSelectField from "../../../../../../common/components/FormSelectField
 import { units } from "../../../../../../common/utils/units";
 
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 
 import Merchant from "./productForm-utils/Merchant";
 import Warehouse from "./productForm-utils/Warehouse";
@@ -59,20 +58,27 @@ const ProductInputs = (props) => {
 
   const fetchMerchantsWarehousesCategoriesHandler = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
 
+      const config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      };
       const categoriesResponse = await apiClient.get(
         "api/admin/category",
-        tokenHeaderConfig
+        config
       );
 
       const warehousesResponse = await apiClient.get(
         "api/admin/warehouse-product",
-        tokenHeaderConfig
+        config
       );
       const merchantsResponse = await apiClient.get(
         "api/admin/merchant-product",
-        tokenHeaderConfig
+        config
       );
       // console.log(categoriesResponse.data);
 
@@ -83,7 +89,7 @@ const ProductInputs = (props) => {
           category["children_recursive"]
         );
       });
-      console.log(merchantsResponse);
+      // console.log(merchantsResponse);
       const transformedMerchants = merchantsResponse.data.map((merchant) => {
         return new Merchant(merchant.id, merchant.name);
       });
@@ -101,11 +107,17 @@ const ProductInputs = (props) => {
 
   const fetchCurrentEditingProduct = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
 
       const productResponse = await apiClient.get(
         `api/admin/product/${props.productId}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       const {
         category_id: apiCategoryId,

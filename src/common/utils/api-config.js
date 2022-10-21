@@ -3,7 +3,7 @@ export const laravelSanctumConfig = {
     Accept: "application/json",
   },
 };
-
+console.log(localStorage.getItem("personalAccessToken"));
 export const userToken = JSON.parse(
   localStorage.getItem("personalAccessToken")
 );

@@ -6,7 +6,6 @@ import FormFileUploadWithPreview from "../../../../../../common/components/FormF
 import { CategorySchema } from "../../../../../../common/utils/validationSchema";
 import Button from "react-bootstrap/Button";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import FormSelectField from "../../../../../../common/components/FormSelectField";
 import CategoryForTable from "./categoryForm-utils/CategoryForTable";
 import { useNavigate } from "react-router-dom";
@@ -23,11 +22,14 @@ const CategoryInputs = ({ randomId, categoryId }) => {
 
   const fetchCategories = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
-      const categoriesResponse = await apiClient.get(
-        "api/admin/category",
-        tokenHeaderConfig
-      );
+      const categoriesResponse = await apiClient.get("api/admin/category", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       const transformedCategories = categoriesResponse.data.map((category) => {
         return new CategoryForTable(
           category.id,
@@ -43,10 +45,16 @@ const CategoryInputs = ({ randomId, categoryId }) => {
 
   const fetchCurrentEditingCategoryId = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
       const currentEditingCategoryResponse = await apiClient.get(
         `api/admin/category/${categoryId}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       // console.log(currentEditingCategoryResponse.data);
       const { name, img_url, parent_category_id } =

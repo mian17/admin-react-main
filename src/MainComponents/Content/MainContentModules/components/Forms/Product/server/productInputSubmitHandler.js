@@ -1,11 +1,10 @@
 import transformProductFormData from "./transformProductFormData";
 import apiClient from "../../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../../common/utils/api-config";
 
 export default function productInputSubmitHandler(setError, navigate) {
   return async (values) => {
     // console.log(values.categoricalInfo);
-
+    const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
     try {
       const {
         productName: name,
@@ -45,11 +44,12 @@ export default function productInputSubmitHandler(setError, navigate) {
 
       await apiClient.get("/sanctum/csrf-cookie");
 
-      const productResponse = await apiClient.post(
-        "api/admin/product",
-        data,
-        tokenHeaderConfig
-      );
+      const productResponse = await apiClient.post("api/admin/product", data, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
 
       alert(productResponse.data.message);
       navigate(0);

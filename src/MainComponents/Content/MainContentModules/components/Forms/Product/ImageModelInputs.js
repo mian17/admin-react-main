@@ -3,7 +3,6 @@ import FormSelectField from "../../../../../../common/components/FormSelectField
 import { Col, Row } from "react-bootstrap";
 import React, { useCallback, useEffect, useState } from "react";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import FormFileUploadWithMultiplePreview from "../../../../../../common/components/FormFileUploadWithMultiplePreview";
 import Button from "react-bootstrap/Button";
 import imageModelInputsOnSubmit from "./server/imageModelInputsOnSubmit";
@@ -19,12 +18,15 @@ const ImageModelInputs = ({ randomId }) => {
 
   const fetchProducts = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get(
-        `api/admin/product-details`,
-        tokenHeaderConfig
-      );
-      console.log(response);
+      const response = await apiClient.get(`api/admin/product-details`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+      // console.log(response);
       setProducts(response.data);
     } catch (err) {
       console.log(err);
@@ -34,10 +36,19 @@ const ImageModelInputs = ({ randomId }) => {
   const fetchModels = useCallback(async (chosenProductId) => {
     if (chosenProductId && chosenProductId > 0) {
       try {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         await apiClient.get("/sanctum/csrf-cookie");
         const response = await apiClient.get(
           `api/admin/product-details/${chosenProductId}/models`,
-          tokenHeaderConfig
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
         );
         console.log(response);
         setModels(response.data);

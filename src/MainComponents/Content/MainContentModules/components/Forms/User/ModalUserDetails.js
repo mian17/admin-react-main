@@ -2,7 +2,6 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import User from "./customerForm-utils/User";
 import { Col, Row, Spinner } from "react-bootstrap";
 import {
@@ -19,12 +18,16 @@ const ModalUserDetails = (props) => {
   const fetchCurrentUser = useCallback(async () => {
     setIsLoading(true);
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
 
-      const response = await apiClient.get(
-        `api/admin/user/${props.userUuid}`,
-        tokenHeaderConfig
-      );
+      const response = await apiClient.get(`api/admin/user/${props.userUuid}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       const {
         username,
         email,
@@ -83,7 +86,7 @@ const ModalUserDetails = (props) => {
       fetchCurrentUser();
     }
   }, [fetchCurrentUser, props.userUuid]);
-  console.log(user);
+  // console.log(user);
 
   const nameRef = useRef(user.name);
   const usernameRef = useRef(null);

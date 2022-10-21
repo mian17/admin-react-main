@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import Warehouse from "./warehouseForm-utils/Warehouse";
 import { WarehouseSchema } from "../../../../../../common/utils/validationSchema";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import { useNavigate } from "react-router-dom";
 import editWarehouseSubmitHandler from "./server/editWarehouseSubmitHandler";
 import newWarehouseSubmitHandler from "./server/newWarehouseSubmitHandler";
@@ -20,11 +19,20 @@ const WarehouseInputs = (props) => {
   const fetchCurrentEditingWarehouse = useCallback(
     async (currentEditingWarehouseId) => {
       try {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         await apiClient.get("/sanctum/csrf-cookie");
 
         const response = await apiClient.get(
           `api/admin/warehouse/${currentEditingWarehouseId}`,
-          tokenHeaderConfig
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
         );
 
         const warehouseResponse = response.data;

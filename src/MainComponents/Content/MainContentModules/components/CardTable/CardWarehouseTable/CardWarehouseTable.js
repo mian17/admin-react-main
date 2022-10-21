@@ -11,7 +11,6 @@ import {
   useTable,
 } from "react-table";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import WarehouseInTable from "./cardWarehouseTable-utils/WarehouseInTable";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import Button from "react-bootstrap/Button";
@@ -41,11 +40,18 @@ const CardWarehouseTable = () => {
     setIsLoading(true);
     setData([]);
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
 
       const response = await apiClient.get(
         `api/admin/warehouse?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       setLastPage(response.data.last_page);
       console.log(response);
@@ -152,9 +158,19 @@ const CardWarehouseTable = () => {
     );
     if (result) {
       setData((prevState) => prevState.filter((item) => item.id !== itemId));
+
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         apiClient
-          .get(`api/admin/warehouse-to-trash/${itemId}`, tokenHeaderConfig)
+          .get(`api/admin/warehouse-to-trash/${itemId}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             console.log(response);
             navigate(0);

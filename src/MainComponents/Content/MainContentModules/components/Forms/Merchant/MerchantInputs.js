@@ -6,7 +6,6 @@ import FormField from "../../../../../../common/components/FormField";
 import LoadingSpinner from "../../../../../../common/components/LoadingSpinner";
 import { MerchantSchema } from "../../../../../../common/utils/validationSchema";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import MerchantToServer from "./merchantForm-utils/MerchantToServer";
 import { useNavigate } from "react-router-dom";
 import editMerchantSubmitHandler from "./server/editMerchantSubmitHandler";
@@ -16,13 +15,16 @@ function newMerchantSubmitHandler(navigate) {
     try {
       const { name, address, phoneNumber, email } = values;
       const data = new MerchantToServer(name, address, phoneNumber, email);
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
 
-      const response = await apiClient.post(
-        "api/admin/merchant",
-        data,
-        tokenHeaderConfig
-      );
+      const response = await apiClient.post("api/admin/merchant", data, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       alert(response.data.message);
       navigate(0);
       actions.resetForm({ values: new Merchant("", "", "", "") });
@@ -41,11 +43,20 @@ const MerchantInputs = (props) => {
   const fetchCurrentEditingMerchant = useCallback(
     async (currentEditingMerchantId) => {
       try {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         await apiClient.get("/sanctum/csrf-cookie");
 
         const response = await apiClient.get(
           `api/admin/warehouse/${currentEditingMerchantId}`,
-          tokenHeaderConfig
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
         );
 
         const merchantResponse = response.data;

@@ -6,7 +6,6 @@ import classes from "../CardCategoryTable/CardCategoryTable.module.css";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {Table} from "react-bootstrap";
 import apiClient from "../../../../../../api";
-import {tokenHeaderConfig} from "../../../../../../common/utils/api-config";
 import OrderInTable from "./cardOrdersTable-utils/OrderInTable";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditOrderDetails from "./ModalEditOrderDetails";
@@ -36,8 +35,17 @@ const CardOrdersTable = () => {
 
     if (result) {
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
         apiClient
-          .delete(`api/admin/order/${orderUuid}`, tokenHeaderConfig)
+          .delete(`api/admin/order/${orderUuid}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             alert(response.data.message);
             navigate(0);
@@ -79,11 +87,20 @@ const CardOrdersTable = () => {
             <select
               onChange={(e) => {
                 apiClient.get("/sanctum/csrf-cookie").then(() => {
+                  const userToken = JSON.parse(
+                    localStorage.getItem("personalAccessToken")
+                  );
+
                   apiClient
                     .patch(
                       `api/admin/order-status-update/${rowItemUuid}`,
                       { status_id: e.target.value },
-                      tokenHeaderConfig
+                      {
+                        headers: {
+                          Accept: "application/json",
+                          Authorization: `Bearer ${userToken}`,
+                        },
+                      }
                     )
                     .then((response) => {
                       alert(response.data.message);
@@ -119,11 +136,20 @@ const CardOrdersTable = () => {
             <select
               onChange={(e) => {
                 apiClient.get("/sanctum/csrf-cookie").then(() => {
+                  const userToken = JSON.parse(
+                    localStorage.getItem("personalAccessToken")
+                  );
+
                   apiClient
                     .patch(
                       `api/admin/payment-details/${rowItemUuid}`,
                       { status: e.target.value },
-                      tokenHeaderConfig
+                      {
+                        headers: {
+                          Accept: "application/json",
+                          Authorization: `Bearer ${userToken}`,
+                        },
+                      }
                     )
                     .then((response) => {
                       console.log(response);
@@ -207,12 +233,19 @@ const CardOrdersTable = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
       const response = await apiClient.get(
         `api/admin/order?page=${currentPage}&filter=${
           filter.length > 3 ? filter : ""
         }`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       // console.log(response.data.data);
       setLastPage(response.data.last_page);
@@ -235,11 +268,15 @@ const CardOrdersTable = () => {
 
   const fetchOrderStatuses = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get(
-        `api/admin/order-status`,
-        tokenHeaderConfig
-      );
+      const response = await apiClient.get(`api/admin/order-status`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       setStatuses(response.data);
     } catch (error) {
       console.log(error);

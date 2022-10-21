@@ -5,7 +5,6 @@ import FormField from "../../../../../../common/components/FormField";
 import React, { useCallback, useEffect, useState } from "react";
 import Order from "./editOrderForm-utils/Order";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import OrderItem from "./editOrderForm-utils/OrderItem";
 import { backendServerPath } from "../../../../../../utilities/backendServerPath";
 
@@ -24,11 +23,18 @@ const EditOrderForm = (props) => {
   const [orderItems, setOrderItems] = useState([]);
   const fetchOrderInfo = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
       await apiClient.get("/sanctum/csrf-cookie");
 
       const response = await apiClient.get(
         `api/admin/order/${props.orderUuid}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       const transformedOrderItems = response.data.map((orderItem) => {
         return new OrderItem(
@@ -74,6 +80,10 @@ const EditOrderForm = (props) => {
         } = values;
 
         try {
+          const userToken = JSON.parse(
+            localStorage.getItem("personalAccessToken")
+          );
+
           await apiClient.get("/sanctum/csrf-cookie");
           const data = new OrderToServer(
             receiverName,
@@ -85,7 +95,12 @@ const EditOrderForm = (props) => {
           const response = await apiClient.patch(
             `api/admin/order/${props.orderUuid}`,
             data,
-            tokenHeaderConfig
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
           );
           alert(response.data.message);
           navigate(0);

@@ -1,6 +1,5 @@
 import transformProductFormData from "./transformProductFormData";
 import apiClient from "../../../../../../../api";
-import { userToken } from "../../../../../../../common/utils/api-config";
 
 export default function productInputEditProductSubmitHandler(
   setError,
@@ -9,6 +8,7 @@ export default function productInputEditProductSubmitHandler(
 ) {
   return async (values) => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       const {
         productName: name,
         productBrand: brand,
@@ -52,13 +52,13 @@ export default function productInputEditProductSubmitHandler(
         data,
         {
           headers: {
-            Authorization: `Bearer ${userToken}`,
             Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
           },
         }
       );
 
-      // console.log(productResponse);
+      console.log(productResponse);
       alert(productResponse.data.message);
       navigate(0);
     } catch (error) {

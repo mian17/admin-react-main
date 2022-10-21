@@ -29,6 +29,9 @@ const AuthProvider = (props) => {
 
   useEffect(() => {
     if (localStorage.getItem("personalAccessToken") !== null) {
+      // console.log("ran");
+      // console.log(localStorage.getItem("personalAccessToken"));
+      // console.log(authState);
       setAuthState({
         loggedIn: true,
         personalAccessToken: JSON.parse(

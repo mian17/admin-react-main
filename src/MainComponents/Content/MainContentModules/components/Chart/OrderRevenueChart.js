@@ -11,7 +11,6 @@ import {
 } from "chart.js";
 import { makeYears } from "../../../../../common/utils/helperFunctions";
 import apiClient from "../../../../../api";
-import { tokenHeaderConfig } from "../../../../../common/utils/api-config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
@@ -86,11 +85,17 @@ const OrderRevenueChart = () => {
 
   const getOrdersRevenueSelectedYear = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
       const response = await apiClient.post(
         `api/admin/chart-analysis-order-revenue`,
         { year: selectedYear },
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       setData({
         labels,

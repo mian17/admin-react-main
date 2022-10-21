@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import apiClient from "../../../../../../api";
-import { tokenHeaderConfig } from "../../../../../../common/utils/api-config";
 import TrashModel from "./TrashModal";
 
 export default function TrashInfo() {
@@ -11,12 +10,15 @@ export default function TrashInfo() {
   const handleShow = () => setShow(true);
   const getNumberOfItemsInTrash = async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
 
-      const productResponse = await apiClient.get(
-        "api/admin/product-trash",
-        tokenHeaderConfig
-      );
+      const productResponse = await apiClient.get("api/admin/product-trash", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
       const numberOfItemsInTrash = productResponse.data.data.length;
       setNum(numberOfItemsInTrash > 0 ? numberOfItemsInTrash : 0);
     } catch (err) {

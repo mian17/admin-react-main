@@ -6,7 +6,6 @@ import {useExpanded, useGlobalFilter, useGroupBy, useRowSelect, useSortBy, useTa
 import {Modal, Table} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import apiClient from "../../../../../../api";
-import {tokenHeaderConfig} from "../../../../../../common/utils/api-config";
 import ProductInTable from "../../CardTable/CardProductsTable/cardProductsTableUtils/ProductInTable";
 import {backendServerPath} from "../../../../../../utilities/backendServerPath";
 import {useNavigate} from "react-router-dom";
@@ -25,11 +24,16 @@ export default function TrashModel(props) {
   const restoreItem = useCallback(
     (rowItemId) => {
       apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
         apiClient
-          .get(
-            `api/admin/product-trash-restore/${rowItemId}`,
-            tokenHeaderConfig
-          )
+          .get(`api/admin/product-trash-restore/${rowItemId}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
           .then((response) => {
             alert(response.data.message);
             navigate(0);
@@ -49,8 +53,16 @@ export default function TrashModel(props) {
       );
       if (result) {
         apiClient.get("/sanctum/csrf-cookie").then(() => {
+          const userToken = JSON.parse(
+            localStorage.getItem("personalAccessToken")
+          );
           apiClient
-            .delete(`api/admin/product/${rowItemId}`, tokenHeaderConfig)
+            .delete(`api/admin/product/${rowItemId}`, {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            })
             .then((response) => {
               alert(response.data.message);
               navigate(0);
@@ -136,10 +148,16 @@ export default function TrashModel(props) {
 
   const fetchProductsInTrash = useCallback(async () => {
     try {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
       const response = await apiClient.get(
         `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
-        tokenHeaderConfig
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
       );
       // console.log(response.data);
 
