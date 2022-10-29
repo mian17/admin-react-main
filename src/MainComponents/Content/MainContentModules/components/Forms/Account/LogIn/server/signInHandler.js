@@ -4,11 +4,12 @@ export default function signInHandler(
   userInput,
   navigate,
   setErrors,
-  setLoggedIn
+  setLoggedIn,
+  setSubmitting
 ) {
   apiClient.get("/sanctum/csrf-cookie").then(() => {
     apiClient
-      .post("/login", userInput)
+      .post("/admin/login", userInput)
       .then((response) => {
         if (response.status === 201) {
           setErrors(null);
@@ -24,6 +25,7 @@ export default function signInHandler(
               localStorage.getItem("personalAccessToken")
             ),
           });
+          setSubmitting(false);
           navigate("/");
         }
       })
@@ -37,6 +39,7 @@ export default function signInHandler(
           // }
           setErrors(errorMessage);
         }
+        setSubmitting(false);
       });
   });
 }

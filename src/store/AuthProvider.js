@@ -19,6 +19,7 @@ const AuthProvider = (props) => {
     setAuthState(loggedInState);
   };
   const setLoggedOutHandler = () => {
+    // console.log("clicked");
     localStorage.removeItem("personalAccessToken");
     localStorage.removeItem("loggedIn");
     setAuthState({

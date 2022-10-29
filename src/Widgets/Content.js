@@ -112,6 +112,18 @@ const Content = () => {
                 </>
               }
             />
+
+            <Route
+              path="/chat"
+              element={
+                <>
+                  <Navbar />
+                  <MainSidebar />
+                  {/*<MerchantContent />*/}
+                  <BannerContent />
+                </>
+              }
+            />
           </Route>
 
           {/*<Preloader />*/}

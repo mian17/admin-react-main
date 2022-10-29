@@ -78,13 +78,13 @@ const LogIn = () => {
   // }
   // };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values, { setSubmitting }) => {
     const userInput = {
       email: values.email,
       password: values.password,
     };
 
-    signInHandler(userInput, navigate, setError, setLoggedIn);
+    signInHandler(userInput, navigate, setError, setLoggedIn, setSubmitting);
   };
   return (
     <div className={classes["center_div"]}>
@@ -111,7 +111,7 @@ const LogIn = () => {
                 validationSchema={SignInSchema}
                 onSubmit={handleSubmit}
               >
-                {({ isSubmitting }) => (
+                {({ isValid, isSubmitting }) => (
                   <Form>
                     <div className="input-group mb-1">
                       <Field
@@ -163,7 +163,7 @@ const LogIn = () => {
                       <button
                         type="submit"
                         className="btn btn-primary btn-block"
-                        disabled={isSubmitting}
+                        disabled={!isValid || isSubmitting}
                       >
                         Đăng nhập
                         {isSubmitting && (

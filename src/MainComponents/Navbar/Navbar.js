@@ -1,4 +1,8 @@
+import { useContext } from "react";
+import AuthContext from "../../store/auth-context";
+
 const Navbar = () => {
+  const { setLoggedOut } = useContext(AuthContext);
   return (
     <nav className="main-header navbar navbar-expand navbar-white navbar-light">
       <ul className="navbar-nav">
@@ -13,14 +17,43 @@ const Navbar = () => {
           </a>
         </li>
         <li className="nav-item d-none d-sm-inline-block">
-          <a href="index.html" className="nav-link">
+          <a href="/" className="nav-link">
             Trang chủ
           </a>
         </li>
-        <li className="nav-item d-none d-sm-inline-block">
-          <a href="/#" className="nav-link">
-            Liên hệ
+        {/*<li className="nav-item d-none d-sm-inline-block">*/}
+        {/*  <a href="/#" className="nav-link">*/}
+        {/*    Liên hệ*/}
+        {/*  </a>*/}
+        {/*</li>*/}
+        <li className="nav-item dropdown">
+          <a
+            className="nav-link dropdown-toggle"
+            href="/#"
+            id="navbarDropdown"
+            role="button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Tài khoản
           </a>
+          <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+            <button
+              className="dropdown-item"
+              // href="/#"
+              onClick={setLoggedOut}
+            >
+              Đăng xuất
+            </button>
+            {/*<a className="dropdown-item" href="/#">*/}
+            {/*  Support*/}
+            {/*</a>*/}
+            {/*<div className="dropdown-divider"></div>*/}
+            {/*<a className="dropdown-item" href="/#">*/}
+            {/*  Contact*/}
+            {/*</a>*/}
+          </div>
         </li>
       </ul>
 
