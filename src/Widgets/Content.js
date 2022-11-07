@@ -12,9 +12,13 @@ import CategoryContent from "../pages/CategoryContent";
 import WarehouseContent from "../pages/WarehouseContent";
 import MerchantContent from "../pages/MerchantContent";
 import ChatContent from "../pages/ChatContent";
+import MessageAlert from "../common/components/MessageAlert";
+import MessageContext from "../store/message-context";
 
 const Content = () => {
   const { loggedIn } = useContext(AuthContext);
+  const { hasMessage, heading, content, variant } = useContext(MessageContext);
+
   return (
     <div className="wrapper">
       <div className="container-fluid">
@@ -113,17 +117,17 @@ const Content = () => {
               }
             />
 
-            <Route
-              path="/chat"
-              element={
-                <>
-                  <Navbar />
-                  <MainSidebar />
-                  {/*<MerchantContent />*/}
-                  <BannerContent />
-                </>
-              }
-            />
+            {/*<Route*/}
+            {/*  path="/homepage-config/banner"*/}
+            {/*  element={*/}
+            {/*    <>*/}
+            {/*      <Navbar />*/}
+            {/*      <MainSidebar />*/}
+            {/*      /!*<MerchantContent />*!/*/}
+            {/*      <BannerContent />*/}
+            {/*    </>*/}
+            {/*  }*/}
+            {/*/>*/}
           </Route>
 
           {/*<Preloader />*/}
@@ -137,6 +141,9 @@ const Content = () => {
         {/*<RevenueContent />*/}
         {/*<SettingContent />*/}
         {/*<Footer />*/}
+        {hasMessage && (
+          <MessageAlert heading={heading} content={content} variant={variant} />
+        )}
       </div>
     </div>
   );

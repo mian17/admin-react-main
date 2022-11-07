@@ -1,7 +1,7 @@
 import { Form, Formik } from "formik";
 import { Col, Row } from "react-bootstrap";
 import FormField from "../../../../../../common/components/FormField";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import FormFileUploadWithPreview from "../../../../../../common/components/FormFileUploadWithPreview";
 import { CategorySchema } from "../../../../../../common/utils/validationSchema";
 import Button from "react-bootstrap/Button";
@@ -12,9 +12,12 @@ import { useNavigate } from "react-router-dom";
 import Category from "./categoryForm-utils/Category";
 import categoryInputsSubmitHandler from "./server/categoryInputsSubmitHandler";
 import LoadingSpinner from "../../../../../../common/components/LoadingSpinner";
+import MessageContext from "../../../../../../store/message-context";
+import Message from "../../../../../../common/utils/Message";
 
 const CategoryInputs = ({ randomId, categoryId }) => {
   const navigate = useNavigate();
+  const { setMessage } = useContext(MessageContext);
   const [initialFormValue, setInitialFormValue] = useState(
     new Category("", "", "")
   );
@@ -40,6 +43,13 @@ const CategoryInputs = ({ randomId, categoryId }) => {
       setCategories(transformedCategories);
     } catch (error) {
       console.log(error);
+      setMessage(
+        new Message(
+          true,
+          "danger",
+          "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
+        )
+      );
     }
   }, []);
 
@@ -69,6 +79,13 @@ const CategoryInputs = ({ randomId, categoryId }) => {
       );
     } catch (error) {
       console.log(error);
+      setMessage(
+        new Message(
+          true,
+          "danger",
+          "Không lấy được thông tin danh mục cần chỉnh sửa! Bạn hãy thử refresh lại trang."
+        )
+      );
     }
   }, [categoryId]);
 
@@ -79,9 +96,9 @@ const CategoryInputs = ({ randomId, categoryId }) => {
     }
   }, [categoryId, fetchCategories, fetchCurrentEditingCategoryId]);
 
-  let categoriesOptions;
+  let categoryOptions;
 
-  categoriesOptions = categories.map((category, i) => (
+  categoryOptions = categories.map((category, i) => (
     <React.Fragment key={i}>
       <option key={i} value={category.id}>
         {category.name}
@@ -125,7 +142,7 @@ const CategoryInputs = ({ randomId, categoryId }) => {
               defaultValue={values.parentCategory}
             >
               <option value="">Không. Đây là danh mục cha.</option>
-              {categoriesOptions}
+              {categoryOptions}
             </FormSelectField>
           </Row>
           <Row className="mb-3">
@@ -143,7 +160,7 @@ const CategoryInputs = ({ randomId, categoryId }) => {
               image={values.image}
             />
           </Row>
-          <pre>{JSON.stringify(values, null, 2)}</pre>
+          {/*<pre>{JSON.stringify(values, null, 2)}</pre>*/}
           <div className="text-right">
             <Button
               variant="primary"

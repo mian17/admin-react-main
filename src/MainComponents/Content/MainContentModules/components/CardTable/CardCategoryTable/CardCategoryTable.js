@@ -1,23 +1,75 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { DATA as DUMP_DATA } from "./cardCategoryTable-utils/data";
+import {useContext, useEffect, useMemo, useState} from "react";
+import {DATA as DUMP_DATA} from "./cardCategoryTable-utils/data";
 // import { COLUMNS as specifiedColumns } from "./cardCategoryTable-utils/columns";
-import { useGlobalFilter, useTable } from "react-table";
-import { Col, Row, Table } from "react-bootstrap";
+import {useGlobalFilter, useTable} from "react-table";
+import {Col, Row} from "react-bootstrap";
 import apiClient from "../../../../../../api";
 import Category from "./cardCategoryTable-utils/Category";
-import { backendServerPath } from "../../../../../../utilities/backendServerPath";
+import {backendServerPath} from "../../../../../../utilities/backendServerPath";
 
 import classes from "./CardCategoryTable.module.css";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditCategory from "../../Forms/Category/ModalEditCategory";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { useNavigate } from "react-router-dom";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import {useNavigate} from "react-router-dom";
+import ReactTable from "../../../../../../common/components/ReactTable";
+import useModal from "../../../../../../hooks/use-modal";
+import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
+import MessageContext from "../../../../../../store/message-context";
+
+// function recursiveChildrenCategoryAddition(category, parentCategoryReadyToPush, transformedCategories) {
+//   if (category.children_recursive.length > 0) {
+//     category.children_recursive.forEach((childCategory) => {
+//       const childParentCategoryReadyToPush = new Category(
+//         childCategory.id,
+//         childCategory.name,
+//         backendServerPath + childCategory.img_url,
+//         parentCategoryReadyToPush.name
+//       );
+//       transformedCategories.push(childParentCategoryReadyToPush);
+//
+//       if (childCategory.children_recursive.length > 0) {
+//         childCategory.children_recursive.forEach((childChildCategory) => {
+//           const childChildParentCategoryReadyToPush = new Category(
+//             childChildCategory.id,
+//             childChildCategory.name,
+//             backendServerPath + childChildCategory.img_url,
+//             childParentCategoryReadyToPush.name
+//           );
+//           transformedCategories.push(childChildParentCategoryReadyToPush);
+//         });
+//       }
+//     });
+//   }
+// }
+function recursiveChildrenCategoryAddition(
+  category,
+  parentCategoryReadyToPush,
+  transformedCategories
+) {
+  category.children_recursive.forEach((childCategory) => {
+    const childParentCategoryReadyToPush = new Category(
+      childCategory.id,
+      childCategory.name,
+      backendServerPath + childCategory.img_url,
+      parentCategoryReadyToPush.name
+    );
+    transformedCategories.push(childParentCategoryReadyToPush);
+
+    recursiveChildrenCategoryAddition(
+      childCategory,
+      childParentCategoryReadyToPush,
+      transformedCategories
+    );
+  });
+}
 
 const CardCategoryTable = () => {
   const navigate = useNavigate();
 
   const [data, setData] = useState(useMemo(() => DUMP_DATA, []));
+  const { setMessage } = useContext(MessageContext);
   const columns = useMemo(
     () => [
       {
@@ -54,7 +106,7 @@ const CardCategoryTable = () => {
           return (
             <div>
               <button
-                className="btn btn-warning"
+                className="btn btn-warning mr-2"
                 onClick={() => editInfoHandler(rowItemId)}
               >
                 <FontAwesomeIcon icon={solid("pen-to-square")} />
@@ -75,18 +127,14 @@ const CardCategoryTable = () => {
   // Editing product id state
   const [editingCategoryId, setEditingCategoryId] = useState(null);
 
-  // Modal State
-  const [show, setShow] = useState(false);
-  // Modal Handlers
-  const handleShow = () => setShow(true);
-  const handleClose = () => setShow(false);
+  const { show, setShow, handleShow, handleClose } = useModal();
 
-  function editInfoHandler(categoryId) {
+  const editInfoHandler = (categoryId) => {
     setEditingCategoryId(categoryId);
     setShow(true);
-  }
+  };
 
-  function deleteCategoryHandler(rowItemId) {
+  const deleteCategoryHandler = (rowItemId) => {
     return () => {
       const result = window.confirm(
         "Bạn có muốn xóa danh mục này VĨNH VIỄN không?"
@@ -113,49 +161,83 @@ const CardCategoryTable = () => {
         });
       }
     };
-  }
+  };
+
   const tableInstance = useTable({ data, columns }, useGlobalFilter);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [hasError, setHasError] = useState(false);
+  // const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
-      const categoriesResponse = await apiClient.get("api/admin/category", {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
-      const transformedCategories = [];
+  const recursiveChildrenCategoryAdditionForFetching = (categoriesResponse) => {
+    let transformedCategories = [];
 
-      categoriesResponse.data.forEach((category) => {
-        const parentCategoryReadyToPush = new Category(
-          category.id,
-          category.name,
-          backendServerPath + category.img_url
-        );
+    categoriesResponse.data.forEach((category) => {
+      const parentCategoryReadyToPush = new Category(
+        category.id,
+        category.name,
+        backendServerPath + category.img_url
+      );
+      transformedCategories.push(parentCategoryReadyToPush);
 
-        transformedCategories.push(parentCategoryReadyToPush);
+      recursiveChildrenCategoryAddition(
+        category,
+        parentCategoryReadyToPush,
+        transformedCategories
+      );
+    });
+    return transformedCategories;
+  };
 
-        if (category.children_recursive.length > 0) {
-          category.children_recursive.forEach((childCategory) => {
-            transformedCategories.push(
-              new Category(
-                childCategory.id,
-                childCategory.name,
-                backendServerPath + childCategory.img_url,
-                parentCategoryReadyToPush.name
-              )
-            );
-          });
-        }
-      });
+  const {
+    isLoading,
+    hasError,
+    noFoundSearchResult,
 
-      setData(transformedCategories);
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+    fetchData: fetchCategories,
+  } = useFetchingTableData(
+    "api/admin/category",
+    setData,
+    recursiveChildrenCategoryAdditionForFetching
+  );
+
+  // const fetchCategories = useCallback(async () => {
+  //   setNoFoundSearchResult(false);
+  //   setIsLoading(true);
+  //   setData([]);
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const categoriesResponse = await apiClient.get("api/admin/category", {
+  //       headers: {
+  //         Accept: "application/json",
+  //         Authorization: `Bearer ${userToken}`,
+  //       },
+  //     });
+  //     let transformedCategories = [];
+  //
+  //     categoriesResponse.data.forEach((category) => {
+  //       const parentCategoryReadyToPush = new Category(
+  //         category.id,
+  //         category.name,
+  //         backendServerPath + category.img_url
+  //       );
+  //       transformedCategories.push(parentCategoryReadyToPush);
+  //
+  //       recursiveChildrenCategoryAddition(
+  //         category,
+  //         parentCategoryReadyToPush,
+  //         transformedCategories
+  //       );
+  //     });
+  //
+  //     setData(transformedCategories);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setHasError(true);
+  //     // alert("Đã có lỗi xảy ra trong quá trình tải các danh mục.");
+  //   }
+  //   setIsLoading(false);
+  // }, []);
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -183,48 +265,16 @@ const CardCategoryTable = () => {
             <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           </Col>
         </Row>
-        <Table
-          {...getTableProps()}
-          striped
-          bordered
-          hover
-          responsive
-          className={classes["table"]}
-        >
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    className={classes["sticky-table-header"]}
-                    {...column.getHeaderProps()}
-                  >
-                    {column.render("Header")}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <td
-                        className={classes["table-text-center"]}
-                        {...cell.getCellProps()}
-                      >
-                        {cell.render("Cell")}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
+        <ReactTable
+          getTableProps={getTableProps}
+          headerGroups={headerGroups}
+          getTableBodyProps={getTableBodyProps}
+          rows={rows}
+          prepareRow={prepareRow}
+          isLoading={isLoading}
+          hasError={hasError}
+          noFoundSearchResult={noFoundSearchResult}
+        />
       </div>
       <ModalEditCategory
         editingCategoryId={editingCategoryId}

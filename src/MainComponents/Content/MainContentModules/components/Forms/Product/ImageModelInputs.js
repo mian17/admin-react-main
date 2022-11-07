@@ -128,7 +128,7 @@ const ImageModelInputs = ({ randomId }) => {
                 images={values.images}
               />
             </Row>
-            <pre>{JSON.stringify(values, null, 2)}</pre>
+            {/*<pre>{JSON.stringify(values, null, 2)}</pre>*/}
             <div className="text-right">
               <Button type="submit" variant="primary" disabled={!isValid}>
                 Tải ảnh lên

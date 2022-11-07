@@ -1,5 +1,4 @@
 import GeneralNavComponent from "./navigationComponents/GeneralNavComponent";
-import {NavLink} from "react-router-dom";
 
 // For icon please use Font Awesome 5 the free version
 // https://fontawesome.com/v5/search
@@ -47,41 +46,41 @@ const NavigationModule = () => (
       ))}
 
       {/*  <li className="nav-header">TEMPLATE TO CUT</li>*/}
-      <li className="nav-item">
-        <a href="/#" className="nav-link">
-          <i className="nav-icon fas fa-home"></i>
-          <p>
-            Tùy chỉnh trang chủ
-            <i className="right fas fa-angle-left"></i>
-          </p>
-        </a>
-        <ul className="nav nav-treeview">
-          <li className="nav-item">
-            <NavLink to="/homepage-config/banner" className="nav-link">
-              <i className="far fa-circle nav-icon"></i>
-              <p>Banner</p>
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <a href="/pages/charts/flot.html" className="nav-link">
-              <i className="far fa-circle nav-icon"></i>
-              <p>Khuyến mãi</p>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="/pages/charts/inline.html" className="nav-link">
-              <i className="far fa-circle nav-icon"></i>
-              <p>Message Banner</p>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="/pages/charts/uplot.html" className="nav-link">
-              <i className="far fa-circle nav-icon"></i>
-              <p>uPlot</p>
-            </a>
-          </li>
-        </ul>
-      </li>
+      {/*<li className="nav-item">*/}
+      {/*  <a href="/#" className="nav-link">*/}
+      {/*    <i className="nav-icon fas fa-home"></i>*/}
+      {/*    <p>*/}
+      {/*      Tùy chỉnh trang chủ*/}
+      {/*      <i className="right fas fa-angle-left"></i>*/}
+      {/*    </p>*/}
+      {/*  </a>*/}
+      {/*  <ul className="nav nav-treeview">*/}
+      {/*    <li className="nav-item">*/}
+      {/*      <NavLink to="/homepage-config/banner" className="nav-link">*/}
+      {/*        <i className="far fa-circle nav-icon"></i>*/}
+      {/*        <p>Banner</p>*/}
+      {/*      </NavLink>*/}
+      {/*    </li>*/}
+      {/*    <li className="nav-item">*/}
+      {/*      <a href="/pages/charts/flot.html" className="nav-link">*/}
+      {/*        <i className="far fa-circle nav-icon"></i>*/}
+      {/*        <p>Khuyến mãi</p>*/}
+      {/*      </a>*/}
+      {/*    </li>*/}
+      {/*    <li className="nav-item">*/}
+      {/*      <a href="/pages/charts/inline.html" className="nav-link">*/}
+      {/*        <i className="far fa-circle nav-icon"></i>*/}
+      {/*        <p>Message Banner</p>*/}
+      {/*      </a>*/}
+      {/*    </li>*/}
+      {/*    <li className="nav-item">*/}
+      {/*      <a href="/pages/charts/uplot.html" className="nav-link">*/}
+      {/*        <i className="far fa-circle nav-icon"></i>*/}
+      {/*        <p>uPlot</p>*/}
+      {/*      </a>*/}
+      {/*    </li>*/}
+      {/*  </ul>*/}
+      {/*</li>*/}
       {/*  <li className="nav-item">*/}
       {/*    <a href="/#" className="nav-link">*/}
       {/*      <i className="nav-icon fas fa-tree"></i>*/}

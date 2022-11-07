@@ -525,6 +525,7 @@ const ProductInputs = (props) => {
             <Button
               variant="primary"
               type="submit"
+              className="ml-2"
               disabled={!isValid || isSubmitting}
             >
               {props.productId ? "Cập nhật sản phẩm" : "Gửi thông tin"}

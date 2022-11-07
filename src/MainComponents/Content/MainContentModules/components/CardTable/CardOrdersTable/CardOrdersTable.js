@@ -2,15 +2,18 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useGlobalFilter, useTable} from "react-table";
-import classes from "../CardCategoryTable/CardCategoryTable.module.css";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
-import {Table} from "react-bootstrap";
 import apiClient from "../../../../../../api";
 import OrderInTable from "./cardOrdersTable-utils/OrderInTable";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditOrderDetails from "./ModalEditOrderDetails";
 import {useNavigate} from "react-router-dom";
 import {formatMoney} from "../../../../../../common/utils/helperFunctions";
+import AdminPagination from "../../../../../../common/components/AdminPagination";
+import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
+import ReactTable from "../../../../../../common/components/ReactTable";
+import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
+import LinearProgress from "../../../../../../common/components/LinearProgress";
 
 // const CardOrdersTableMessage = (props) => {
 //   return (
@@ -27,36 +30,7 @@ const CardOrdersTable = () => {
   const [statuses, setStatuses] = useState([]);
 
   const [data, setData] = useState(useMemo(() => [], []));
-
-  function deleteOrder(orderUuid) {
-    const result = window.confirm(
-      "Bạn có chắc chắn muốn xóa đơn hàng này? Dữ liệu này sẽ bị xóa VĨNH VIỄN!"
-    );
-
-    if (result) {
-      apiClient.get("/sanctum/csrf-cookie").then(() => {
-        const userToken = JSON.parse(
-          localStorage.getItem("personalAccessToken")
-        );
-
-        apiClient
-          .delete(`api/admin/order/${orderUuid}`, {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${userToken}`,
-            },
-          })
-          .then((response) => {
-            alert(response.data.message);
-            navigate(0);
-          })
-          .catch((error) => {
-            alert(error.response.data.message);
-          });
-      });
-    }
-  }
-
+  const [progressBarIsShown, setProgressBarIsShown] = useState(false);
   const columns = useMemo(
     () => [
       {
@@ -86,6 +60,7 @@ const CardOrdersTable = () => {
           return (
             <select
               onChange={(e) => {
+                setProgressBarIsShown(true);
                 apiClient.get("/sanctum/csrf-cookie").then(() => {
                   const userToken = JSON.parse(
                     localStorage.getItem("personalAccessToken")
@@ -103,9 +78,15 @@ const CardOrdersTable = () => {
                       }
                     )
                     .then((response) => {
+                      setTimeout(() => {
+                        setProgressBarIsShown(false);
+                      }, 300);
                       alert(response.data.message);
                     })
                     .catch((error) => {
+                      setTimeout(() => {
+                        setProgressBarIsShown(false);
+                      }, 300);
                       alert(error.response.data.message);
                     });
                 });
@@ -135,6 +116,9 @@ const CardOrdersTable = () => {
           return (
             <select
               onChange={(e) => {
+                console.log("ran");
+                setProgressBarIsShown(true);
+
                 apiClient.get("/sanctum/csrf-cookie").then(() => {
                   const userToken = JSON.parse(
                     localStorage.getItem("personalAccessToken")
@@ -152,10 +136,16 @@ const CardOrdersTable = () => {
                       }
                     )
                     .then((response) => {
+                      setTimeout(() => {
+                        setProgressBarIsShown(false);
+                      }, 300);
                       console.log(response);
                       alert(response.data.message);
                     })
                     .catch((error) => {
+                      setTimeout(() => {
+                        setProgressBarIsShown(false);
+                      }, 300);
                       console.log(error);
                     });
                 });
@@ -193,13 +183,13 @@ const CardOrdersTable = () => {
           const rowItemUuid = cell.row.values.orderUuid; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
-            <div>
-              <button
-                className="btn btn-success"
-                onClick={() => copyInfoHandler(rowValues)}
-              >
-                <FontAwesomeIcon icon={solid("copy")} />
-              </button>
+            <div className="d-flex justify-content-between">
+              {/*<button*/}
+              {/*  className="btn btn-success"*/}
+              {/*  onClick={() => copyInfoHandler(rowValues)}*/}
+              {/*>*/}
+              {/*  <FontAwesomeIcon icon={solid("copy")} />*/}
+              {/*</button>*/}
               <button
                 className="btn btn-warning"
                 onClick={() => handleShow(rowItemUuid)}
@@ -219,6 +209,36 @@ const CardOrdersTable = () => {
     ],
     [statuses]
   );
+
+  function deleteOrder(orderUuid) {
+    const result = window.confirm(
+      "Bạn có chắc chắn muốn xóa đơn hàng này? Dữ liệu này sẽ bị xóa VĨNH VIỄN!"
+    );
+
+    if (result) {
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
+        apiClient
+          .delete(`api/admin/order/${orderUuid}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          })
+          .then((response) => {
+            alert(response.data.message);
+            navigate(0);
+          })
+          .catch((error) => {
+            alert(error.response.data.message);
+          });
+      });
+    }
+  }
+
   const tableInstance = useTable({ data, columns }, useGlobalFilter);
   const { getTableProps, headerGroups, getTableBodyProps, rows, prepareRow } =
     tableInstance;
@@ -226,45 +246,85 @@ const CardOrdersTable = () => {
   ///////////////////////////////////////
   // Fetch Data
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(2);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [lastPage, setLastPage] = useState(2);
+
+  const {
+    currentPage,
+    lastPage,
+    setLastPage,
+    nextPageHandler,
+    previousPageHandler,
+    firstPageHandler,
+    lastPageHandler,
+    changePageOnClickedValue,
+  } = useAdminPagination();
 
   const [filter, setFilter] = useState("");
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  // const fetchOrders = useCallback(async () => {
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const response = await apiClient.get(
+  //       `api/admin/order?page=${currentPage}&filter=${
+  //         filter.length > 3 ? filter : ""
+  //       }`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${userToken}`,
+  //         },
+  //       }
+  //     );
+  //     // console.log(response.data.data);
+  //     setLastPage(response.data.last_page);
+  //     const transformedOrders = response.data.data.map((order) => {
+  //       return new OrderInTable(
+  //         order.uuid,
+  //         order.receiver_name,
+  //         order.receiver_phone_number,
+  //         order.receiver_address,
+  //         order.status_id,
+  //         order.payment_details.status,
+  //         order.total
+  //       );
+  //     });
+  //     setData(transformedOrders);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, [currentPage, filter, setLastPage]);
 
-      await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get(
-        `api/admin/order?page=${currentPage}&filter=${
-          filter.length > 3 ? filter : ""
-        }`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+  const transformOrderResponse = (response) => {
+    setLastPage(response.data.last_page);
+    const transformedOrders = response.data.data.map((order) => {
+      return new OrderInTable(
+        order.uuid,
+        order.receiver_name,
+        order.receiver_phone_number,
+        order.receiver_address,
+        order.status_id,
+        order.payment_details.status,
+        order.total
       );
-      // console.log(response.data.data);
-      setLastPage(response.data.last_page);
-      const transformedOrders = response.data.data.map((order) => {
-        return new OrderInTable(
-          order.uuid,
-          order.receiver_name,
-          order.receiver_phone_number,
-          order.receiver_address,
-          order.status_id,
-          order.payment_details.status,
-          order.total
-        );
-      });
-      setData(transformedOrders);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [currentPage, filter]);
+    });
+    return transformedOrders;
+  };
+  console.log(progressBarIsShown);
+  const {
+    isLoading,
+    hasError,
+    noFoundSearchResult,
+    fetchData: fetchOrders,
+  } = useFetchingTableData(
+    `api/admin/order?page=${currentPage}&filter=${
+      filter.length > 3 ? filter : ""
+    }`,
+    setData,
+    transformOrderResponse
+  );
 
   const fetchOrderStatuses = useCallback(async () => {
     try {
@@ -287,43 +347,16 @@ const CardOrdersTable = () => {
     fetchOrderStatuses();
   }, [fetchOrderStatuses, fetchOrders]);
 
-  ///////////////////////////////////////
-  // Pagination Handler
-
-  function nextPageHandler() {
-    if (currentPage < lastPage) {
-      setCurrentPage((previousPage) => previousPage + 1);
-    }
-  }
-
-  function previousPageHandler() {
-    if (currentPage > 1) {
-      setCurrentPage((previousPage) => previousPage - 1);
-    }
-  }
-
-  function firstPageHandler() {
-    setCurrentPage(1);
-  }
-
-  function lastPageHandler() {
-    setCurrentPage(lastPage);
-  }
-
-  function changePageOnClickedValue(e) {
-    setCurrentPage(+e.target.value);
-  }
-
-  function copyInfoHandler(valueObj) {
-    let readyForClipboard = "";
-    for (const property in valueObj) {
-      if (property === "functions" || property === "img") continue;
-      readyForClipboard += `${valueObj[property]}\t`;
-    }
-    navigator.clipboard.writeText(readyForClipboard).then(() => {
-      alert("Đã copy nội dung hàng của bảng!");
-    });
-  }
+  // function copyInfoHandler(valueObj) {
+  //   let readyForClipboard = "";
+  //   for (const property in valueObj) {
+  //     if (property === "functions" || property === "img") continue;
+  //     readyForClipboard += `${valueObj[property]}\t`;
+  //   }
+  //   navigator.clipboard.writeText(readyForClipboard).then(() => {
+  //     alert("Đã copy nội dung hàng của bảng!");
+  //   });
+  // }
 
   const [show, setShow] = useState(false);
   const [editingOrderUuid, setEditingOrderUuid] = useState(null);
@@ -349,105 +382,27 @@ const CardOrdersTable = () => {
           style={{ justifySelf: "flex-end" }}
         />
       </div>
+      {progressBarIsShown && <LinearProgress />}
       <div className="card-body">
-        <Table
-          {...getTableProps()}
-          striped
-          bordered
-          hover
-          responsive
-          className={classes["table"]}
-        >
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    className={classes["sticky-table-header"]}
-                    {...column.getHeaderProps()}
-                  >
-                    {column.render("Header")}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <td
-                        className={classes["table-text-center"]}
-                        {...cell.getCellProps()}
-                      >
-                        {cell.render("Cell")}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
-        <ul className="pagination">
-          <li className="page-item" onClick={firstPageHandler}>
-            <button className="page-link">&laquo;</button>
-          </li>
-          <li className="page-item" onClick={previousPageHandler}>
-            <button className="page-link" aria-label="Previous">
-              <span aria-hidden="true">&larr;</span>
-              <span className="sr-only">Previous</span>
-            </button>
-          </li>
-
-          {currentPage > 2 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          {Array.from(Array(lastPage), (e, i) => {
-            return (
-              <div key={i}>
-                {i >= currentPage - 2 && i <= currentPage + 2 && (
-                  <li
-                    className={`page-item ${
-                      Number(currentPage) === i + 1 ? "active" : ""
-                    }`}
-                  >
-                    <button
-                      onClick={changePageOnClickedValue}
-                      className="page-link"
-                      value={i + 1}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                )}
-              </div>
-            );
-          })}
-          {currentPage < lastPage - 3 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          <li className="page-item" onClick={nextPageHandler}>
-            <button className="page-link" aria-label="Next">
-              <span aria-hidden="true">&rarr;</span>
-              <span className="sr-only">Next</span>
-            </button>
-          </li>
-          <li className="page-item" onClick={lastPageHandler}>
-            <button className="page-link">&raquo;</button>
-          </li>
-        </ul>
+        <ReactTable
+          getTableProps={getTableProps}
+          headerGroups={headerGroups}
+          getTableBodyProps={getTableBodyProps}
+          rows={rows}
+          prepareRow={prepareRow}
+          isLoading={isLoading}
+          hasError={hasError}
+          noFoundSearchResult={noFoundSearchResult}
+        />
+        <AdminPagination
+          firstPageHandler={firstPageHandler}
+          previousPageHandler={previousPageHandler}
+          currentPage={currentPage}
+          lastPage={lastPage}
+          changePageOnClickedValue={changePageOnClickedValue}
+          nextPageHandler={nextPageHandler}
+          lastPageHandler={lastPageHandler}
+        />
 
         <ModalEditOrderDetails
           show={show}

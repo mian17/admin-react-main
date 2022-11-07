@@ -3,7 +3,12 @@ import CategoryInputs from "./CategoryInputs";
 
 const ModalEditCategory = (props) => {
   return (
-    <Modal size="lg" show={props.show} onHide={props.handleClose}>
+    <Modal
+      size="lg"
+      className="align-items-center"
+      show={props.show}
+      onHide={props.handleClose}
+    >
       <Modal.Header closeButton>
         <Modal.Title>
           Sửa thông tin cho danh mục có id là {props.editingCategoryId}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import {
@@ -9,8 +9,7 @@ import {
   useSortBy,
   useTable,
 } from "react-table";
-import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
-
+// import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
 import { productsInTableRows } from "./cardProductsTable-test-data/productsInTable-rows";
 import { confirm } from "react-confirm-box";
 
@@ -24,21 +23,34 @@ import ProductInTable from "./cardProductsTableUtils/ProductInTable";
 import { backendServerPath } from "../../../../../../utilities/backendServerPath";
 import classes from "./CardProductsTable.module.css";
 import { useNavigate } from "react-router-dom";
+import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
+import AdminPagination from "../../../../../../common/components/AdminPagination";
+import ReactTable from "../../../../../../common/components/ReactTable";
+import { formatMoney } from "../../../../../../common/utils/helperFunctions";
+import useModal from "../../../../../../hooks/use-modal";
+import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 
 const CardProductsTable = () => {
   const navigate = useNavigate();
 
-  // Modal State
-  const [show, setShow] = useState(false);
-  // Modal Handlers
-  const handleShow = () => setShow(true);
-  const handleClose = () => setShow(false);
+  const { show, setShow, handleShow, handleClose } = useModal();
 
   // Editing product id state
   const [editingProductId, setEditingProductId] = useState(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(2);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [lastPage, setLastPage] = useState(2);
+
+  const {
+    currentPage,
+    lastPage,
+    setLastPage,
+    nextPageHandler,
+    previousPageHandler,
+    firstPageHandler,
+    lastPageHandler,
+    changePageOnClickedValue,
+  } = useAdminPagination();
 
   const [filter, setFilter] = useState("");
   const filterChangeHandler = (e) => {
@@ -46,48 +58,43 @@ const CardProductsTable = () => {
   };
 
   // React Table Handler
-  const fetchProducts = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get(
-        `api/admin/product?page=${currentPage}&filter=${filter}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      // console.log(response.data);
-
-      setLastPage(response.data.last_page);
-      const transformedProducts = response.data.data.map((product) => {
-        const productQuantity = product.kinds.reduce((prevVal, kind) => {
-          return prevVal + kind.quantity;
-        }, 0);
-
-        return new ProductInTable(
-          product.id,
-          backendServerPath + product.kinds[0].image_1,
-          product.name,
-          productQuantity,
-          product.price,
-          product.status,
-          product.category.name,
-          product.brand
-        );
-      });
-
-      setData(transformedProducts);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [currentPage, filter]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  // const fetchProducts = useCallback(async () => {
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const response = await apiClient.get(
+  //       `api/admin/product?page=${currentPage}&filter=${filter}`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${userToken}`,
+  //         },
+  //       }
+  //     );
+  //
+  //     setLastPage(response.data.last_page);
+  //     const transformedProducts = response.data.data.map((product) => {
+  //       const productQuantity = product.kinds.reduce((prevVal, kind) => {
+  //         return prevVal + kind.quantity;
+  //       }, 0);
+  //
+  //       return new ProductInTable(
+  //         product.id,
+  //         backendServerPath + product.kinds[0].image_1,
+  //         product.name,
+  //         productQuantity,
+  //         product.price,
+  //         product.status,
+  //         product.category.name,
+  //         product.brand
+  //       );
+  //     });
+  //
+  //     setData(transformedProducts);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, [currentPage, filter, setLastPage]);
 
   const [data, setData] = useState(useMemo(() => productsInTableRows, []));
 
@@ -117,6 +124,12 @@ const CardProductsTable = () => {
       {
         Header: "Đơn giá",
         accessor: "price",
+
+        Cell: ({ cell, row }) => {
+          const price = cell.row.values.price;
+
+          return <>{!isNaN(price) ? formatMoney(price) : price}</>;
+        },
       },
 
       {
@@ -127,10 +140,6 @@ const CardProductsTable = () => {
         Header: "Trạng thái",
         accessor: "status",
       },
-      // {
-      //   Header: "Nhà bán",
-      //   accessor: "merchant",
-      // },
       {
         Header: "Chức năng",
         accessor: "functions",
@@ -140,7 +149,7 @@ const CardProductsTable = () => {
           const rowItemId = cell.row.values.id; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
-            <div>
+            <div className="d-flex justify-content-between m-1">
               <button
                 className="btn btn-success"
                 onClick={() => copyInfoHandler(rowValues)}
@@ -166,6 +175,41 @@ const CardProductsTable = () => {
     ],
     []
   );
+
+  function transformProductResponse(response) {
+    setLastPage(response.data.last_page);
+    return response.data.data.map((product) => {
+      const productQuantity = product.kinds.reduce((prevVal, kind) => {
+        return prevVal + kind.quantity;
+      }, 0);
+
+      return new ProductInTable(
+        product.id,
+        backendServerPath + product.kinds[0].image_1,
+        product.name,
+        productQuantity,
+        product.price,
+        product.status,
+        product.category.name,
+        product.brand
+      );
+    });
+  }
+
+  const {
+    isLoading,
+    hasError,
+    noFoundSearchResult,
+    fetchData: fetchProducts,
+  } = useFetchingTableData(
+    `api/admin/product?page=${currentPage}&filter=${filter}`,
+    setData,
+    transformProductResponse
+  );
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
@@ -215,21 +259,22 @@ const CardProductsTable = () => {
     }
   }
 
-  const deleteBulkInfoHandler = async () => {
-    // a variable from react table library
-    const bulkId = selectedFlatRows.map((row) => row.original.id);
-    // console.log(bulkId);
-
-    const result = await confirm(
-      "Bạn có chắc chắn muốn xóa các sản phẩm này?",
-      confirmBoxOptions
-    );
-    if (result) {
-      setData((prevState) => {
-        return prevState.filter((product) => !bulkId.includes(product.id));
-      });
-    }
-  };
+  // Not yet implemented Handler - DO NOT DELETE
+  // const deleteBulkInfoHandler = async () => {
+  //   // a variable from react table library
+  //   const bulkId = selectedFlatRows.map((row) => row.original.id);
+  //   // console.log(bulkId);
+  //
+  //   const result = await confirm(
+  //     "Bạn có chắc chắn muốn xóa các sản phẩm này?",
+  //     confirmBoxOptions
+  //   );
+  //   if (result) {
+  //     setData((prevState) => {
+  //       return prevState.filter((product) => !bulkId.includes(product.id));
+  //     });
+  //   }
+  // };
 
   const tableInstance = useTable(
     { columns, data },
@@ -237,23 +282,23 @@ const CardProductsTable = () => {
     useGroupBy,
     useSortBy,
     useExpanded,
-    useRowSelect,
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => {
-        return [
-          {
-            id: "selection",
-            Header: ({ getToggleAllRowsSelectedProps }) => (
-              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-            ),
-            Cell: ({ row }) => (
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            ),
-          },
-          ...columns,
-        ];
-      });
-    }
+    useRowSelect
+    // (hooks) => {
+    //   hooks.visibleColumns.push((columns) => {
+    //     return [
+    //       {
+    //         id: "selection",
+    //         Header: ({ getToggleAllRowsSelectedProps }) => (
+    //           <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+    //         ),
+    //         Cell: ({ row }) => (
+    //           <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+    //         ),
+    //       },
+    //       ...columns,
+    //     ];
+    //   });
+    // }
   );
   const {
     getTableProps,
@@ -261,7 +306,7 @@ const CardProductsTable = () => {
     headerGroups,
     rows,
     prepareRow,
-    selectedFlatRows,
+    // selectedFlatRows,
   } = tableInstance;
 
   const headers = [
@@ -272,37 +317,6 @@ const CardProductsTable = () => {
     { label: "Danh mục", key: "category" },
     // { label: "Nhà bán", key: "category" },
   ];
-  // this.id = id;
-  // this.name = name;
-  // this.quantity = quantity;
-  // this.price = price;
-  // this.status = status;
-  // this.category = category;
-  function nextPageHandler() {
-    if (currentPage < lastPage) {
-      setCurrentPage((previousPage) => previousPage + 1);
-    }
-  }
-
-  function previousPageHandler() {
-    if (currentPage > 1) {
-      setCurrentPage((previousPage) => previousPage - 1);
-    }
-  }
-
-  function firstPageHandler() {
-    setCurrentPage(1);
-  }
-
-  function lastPageHandler() {
-    setCurrentPage(lastPage);
-  }
-
-  function changePageOnClickedValue(e) {
-    setCurrentPage(+e.target.value);
-  }
-
-  // this.merchant = merchant;
   return (
     <div className="card">
       <div className="card-header bg-secondary">
@@ -332,114 +346,72 @@ const CardProductsTable = () => {
             </span>
           </div>
         </div>
-        <table
-          {...getTableProps()}
-          className="table table-bordered table-hover"
-        >
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    {...column.getHeaderProps()}
-                  >
-                    {column.render("Header")}
-                    <span>
-                      {column.isSorted ? (
-                        column.isSortedDesc ? (
-                          <FontAwesomeIcon icon={solid("arrow-down")} />
-                        ) : (
-                          <FontAwesomeIcon icon={solid("arrow-up")} />
-                        )
-                      ) : (
-                        ""
-                      )}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
+        {/*Old table with indeterminate selection and sort by clicking table head*/}
 
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <pre>
-          <code>
-            {JSON.stringify({
-              selectedFlatRows: selectedFlatRows.map((row) => row.original),
-            })}
-          </code>
-        </pre>
-        <ul className="pagination">
-          <li className="page-item" onClick={firstPageHandler}>
-            <button className="page-link">&laquo;</button>
-          </li>
-          <li className="page-item" onClick={previousPageHandler}>
-            <button className="page-link" aria-label="Previous">
-              <span aria-hidden="true">&larr;</span>
-              <span className="sr-only">Previous</span>
-            </button>
-          </li>
+        {/*<table*/}
+        {/*  {...getTableProps()}*/}
+        {/*  className="table table-bordered table-hover"*/}
+        {/*>*/}
+        {/*  <thead>*/}
+        {/*    {headerGroups.map((headerGroup) => (*/}
+        {/*      <tr {...headerGroup.getHeaderGroupProps()}>*/}
+        {/*        {headerGroup.headers.map((column) => (*/}
+        {/*          <th*/}
+        {/*            {...column.getHeaderProps(column.getSortByToggleProps())}*/}
+        {/*            {...column.getHeaderProps()}*/}
+        {/*          >*/}
+        {/*            {column.render("Header")}*/}
+        {/*            <span>*/}
+        {/*              {column.isSorted ? (*/}
+        {/*                column.isSortedDesc ? (*/}
+        {/*                  <FontAwesomeIcon icon={solid("arrow-down")} />*/}
+        {/*                ) : (*/}
+        {/*                  <FontAwesomeIcon icon={solid("arrow-up")} />*/}
+        {/*                )*/}
+        {/*              ) : (*/}
+        {/*                ""*/}
+        {/*              )}*/}
+        {/*            </span>*/}
+        {/*          </th>*/}
+        {/*        ))}*/}
+        {/*      </tr>*/}
+        {/*    ))}*/}
+        {/*  </thead>*/}
 
-          {currentPage > 2 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          {Array.from(Array(lastPage), (e, i) => {
-            return (
-              <div key={i}>
-                {i >= currentPage - 2 && i <= currentPage + 2 && (
-                  <li
-                    className={`page-item ${
-                      Number(currentPage) === i + 1 ? "active" : ""
-                    }`}
-                  >
-                    <button
-                      onClick={changePageOnClickedValue}
-                      className="page-link"
-                      value={i + 1}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                )}
-              </div>
-            );
-          })}
-          {currentPage < lastPage - 3 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          <li className="page-item" onClick={nextPageHandler}>
-            <button className="page-link" aria-label="Next">
-              <span aria-hidden="true">&rarr;</span>
-              <span className="sr-only">Next</span>
-            </button>
-          </li>
-          <li className="page-item" onClick={lastPageHandler}>
-            <button className="page-link">&raquo;</button>
-          </li>
-        </ul>
+        {/*  <tbody {...getTableBodyProps()}>*/}
+        {/*    {rows.map((row) => {*/}
+        {/*      prepareRow(row);*/}
+        {/*      return (*/}
+        {/*        <tr {...row.getRowProps()}>*/}
+        {/*          {row.cells.map((cell) => {*/}
+        {/*            return (*/}
+        {/*              <td {...cell.getCellProps()}>{cell.render("Cell")}</td>*/}
+        {/*            );*/}
+        {/*          })}*/}
+        {/*        </tr>*/}
+        {/*      );*/}
+        {/*    })}*/}
+        {/*  </tbody>*/}
+        {/*</table>*/}
+        <ReactTable
+          getTableProps={getTableProps}
+          headerGroups={headerGroups}
+          getTableBodyProps={getTableBodyProps}
+          rows={rows}
+          prepareRow={prepareRow}
+          isLoading={isLoading}
+          hasError={hasError}
+          noFoundSearchResult={noFoundSearchResult}
+        />
+        <AdminPagination
+          firstPageHandler={firstPageHandler}
+          previousPageHandler={previousPageHandler}
+          currentPage={currentPage}
+          lastPage={lastPage}
+          changePageOnClickedValue={changePageOnClickedValue}
+          nextPageHandler={nextPageHandler}
+          lastPageHandler={lastPageHandler}
+        />
       </div>
       <ModalEditProduct
         editingProductId={editingProductId}

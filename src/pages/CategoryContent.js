@@ -4,18 +4,16 @@ import CardCategoryTable from "../MainComponents/Content/MainContentModules/comp
 
 const CategoryContent = () => {
   return (
-    <>
-      <div className="content-wrapper">
-        <ContentHeader name="Danh mục" />
+    <div className="content-wrapper">
+      <ContentHeader name="Danh mục" />
 
-        <section className="col-lg-12">
-          <CategoryAdd />
-        </section>
-        <section className="col-lg-12">
-          <CardCategoryTable />
-        </section>
-      </div>
-    </>
+      <section className="col-lg-12">
+        <CategoryAdd />
+      </section>
+      <section className="col-lg-12">
+        <CardCategoryTable />
+      </section>
+    </div>
   );
 };
 export default CategoryContent;
