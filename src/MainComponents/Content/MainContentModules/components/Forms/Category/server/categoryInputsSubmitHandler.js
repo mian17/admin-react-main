@@ -3,7 +3,8 @@ import transformCategoryInputsFormData from "../categoryForm-utils/transformCate
 
 export default function categoryInputsSubmitHandler(
   navigate,
-  categoryId = null
+  categoryId = null,
+  setMessage
 ) {
   return async (values) => {
     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
@@ -24,9 +25,13 @@ export default function categoryInputsSubmitHandler(
         }
       );
       alert(response.data.message);
+      // setMessage(new Message(true, "success", response.data.message));
+      // setTimeout(() => {
       navigate(0);
+      // }, MESSAGE_TIMEOUT);
     } catch (error) {
       alert(error.response.data.message);
+      // setMessage(new Message(true, "danger", error.response.data.message));
     }
   };
 }

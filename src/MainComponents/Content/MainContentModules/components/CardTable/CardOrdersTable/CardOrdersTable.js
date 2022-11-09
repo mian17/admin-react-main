@@ -5,7 +5,6 @@ import {useGlobalFilter, useTable} from "react-table";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import apiClient from "../../../../../../api";
 import OrderInTable from "./cardOrdersTable-utils/OrderInTable";
-import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditOrderDetails from "./ModalEditOrderDetails";
 import {useNavigate} from "react-router-dom";
 import {formatMoney} from "../../../../../../common/utils/helperFunctions";
@@ -14,6 +13,8 @@ import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
 import ReactTable from "../../../../../../common/components/ReactTable";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import LinearProgress from "../../../../../../common/components/LinearProgress";
+import ServerFilter from "../../../../../../common/components/ServerFilter";
+import useServerFilter from "../../../../../../hooks/use-server-filter";
 
 // const CardOrdersTableMessage = (props) => {
 //   return (
@@ -251,6 +252,7 @@ const CardOrdersTable = () => {
 
   const {
     currentPage,
+    setCurrentPage,
     lastPage,
     setLastPage,
     nextPageHandler,
@@ -260,8 +262,7 @@ const CardOrdersTable = () => {
     changePageOnClickedValue,
   } = useAdminPagination();
 
-  const [filter, setFilter] = useState("");
-
+  const { filter, filterChangeHandler } = useServerFilter(setCurrentPage);
   // const fetchOrders = useCallback(async () => {
   //   try {
   //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
@@ -299,7 +300,7 @@ const CardOrdersTable = () => {
 
   const transformOrderResponse = (response) => {
     setLastPage(response.data.last_page);
-    const transformedOrders = response.data.data.map((order) => {
+    return response.data.data.map((order) => {
       return new OrderInTable(
         order.uuid,
         order.receiver_name,
@@ -310,9 +311,8 @@ const CardOrdersTable = () => {
         order.total
       );
     });
-    return transformedOrders;
   };
-  console.log(progressBarIsShown);
+
   const {
     isLoading,
     hasError,
@@ -376,10 +376,14 @@ const CardOrdersTable = () => {
         <h3 className="card-title">Danh sách đơn hàng</h3>
       </div>
       <div className="p-2 d-flex flex-row-reverse mt-2">
-        <GlobalFilter
+        {/*<GlobalFilter*/}
+        {/*  filter={filter}*/}
+        {/*  setFilter={setFilter}*/}
+        {/*  style={{ justifySelf: "flex-end" }}*/}
+        {/*/>*/}
+        <ServerFilter
           filter={filter}
-          setFilter={setFilter}
-          style={{ justifySelf: "flex-end" }}
+          filterChangeHandler={filterChangeHandler}
         />
       </div>
       {progressBarIsShown && <LinearProgress />}
@@ -393,6 +397,7 @@ const CardOrdersTable = () => {
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
+          colSpan={8}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

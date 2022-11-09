@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import apiClient from "../../../../../../api";
 import { copyInfoHandler } from "../../../../../../common/utils/tableFunctions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,68 +16,102 @@ import {
 } from "react-table";
 import Button from "react-bootstrap/Button";
 import { CSVLink } from "react-csv";
-import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import MerchantInTable from "./cardMerchantTable-utils/MerchantInTable";
 import ModalEditMerchant from "../../Forms/Merchant/ModalEditMerchant";
 import { useNavigate } from "react-router-dom";
+import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
+import AdminPagination from "../../../../../../common/components/AdminPagination";
+import ReactTable from "../../../../../../common/components/ReactTable";
+import FunctionalitiesDiv from "../../../../../../common/components/FunctionalitiesDiv";
+import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
+import useModal from "../../../../../../hooks/use-modal";
+import ServerFilter from "../../../../../../common/components/ServerFilter";
+import useServerFilter from "../../../../../../hooks/use-server-filter";
 
 const CardMerchantTable = () => {
   const navigate = useNavigate();
-
-  ////////////////////////////////
-  // DATABASE FETCH
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
-
   const [data, setData] = useState(useMemo(() => [], []));
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(2);
+  const {
+    currentPage,
+    setCurrentPage,
+    lastPage,
+    setLastPage,
+    nextPageHandler,
+    previousPageHandler,
+    firstPageHandler,
+    lastPageHandler,
+    changePageOnClickedValue,
+  } = useAdminPagination();
 
-  const [filter, setFilter] = useState("");
+  const { filter, filterChangeHandler } = useServerFilter(setCurrentPage);
   const [itemPerPage, setItemPerPage] = useState(10);
 
-  const fetchMerchants = useCallback(async () => {
-    setNoFoundSearchResult(false);
-    setIsLoading(true);
-    setData([]);
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
+  // const fetchMerchants = useCallback(async () => {
+  //   setNoFoundSearchResult(false);
+  //   setIsLoading(true);
+  //   setData([]);
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //
+  //     const response = await apiClient.get(
+  //       `api/admin/merchant?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${userToken}`,
+  //         },
+  //       }
+  //     );
+  //     setLastPage(response.data.last_page);
+  //     console.log(response);
+  //
+  //     if (response.data.data.length > 0) {
+  //       const transformedMerchants = response.data.data.map((merchant) => {
+  //         return new MerchantInTable(
+  //           merchant.id,
+  //           merchant.name,
+  //           merchant.phone_number,
+  //           merchant.address,
+  //           merchant.email
+  //         );
+  //       });
+  //       setData(transformedMerchants);
+  //     } else {
+  //       setNoFoundSearchResult(true);
+  //     }
+  //   } catch (error) {
+  //     // alert(error.response.data.message);
+  //     setHasError(true);
+  //   }
+  //   setIsLoading(false);
+  // }, [currentPage, filter, itemPerPage]);
 
-      const response = await apiClient.get(
-        `api/admin/merchant?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      setLastPage(response.data.last_page);
-      console.log(response);
-
-      if (response.data.data.length > 0) {
-        const transformedMerchants = response.data.data.map((merchant) => {
-          return new MerchantInTable(
-            merchant.id,
-            merchant.name,
-            merchant.phone_number,
-            merchant.address,
-            merchant.email
-          );
-        });
-        setData(transformedMerchants);
-      } else {
-        setNoFoundSearchResult(true);
-      }
-    } catch (error) {
-      // alert(error.response.data.message);
-      setHasError(true);
+  function transformMerchants(response) {
+    setLastPage(response.data.last_page);
+    if (response.data.data.length > 0) {
+      return response.data.data.map((merchant) => {
+        return new MerchantInTable(
+          merchant.id,
+          merchant.name,
+          merchant.phone_number,
+          merchant.address,
+          merchant.email
+        );
+      });
     }
-    setIsLoading(false);
-  }, [currentPage, filter, itemPerPage]);
+  }
+  const {
+    isLoading,
+    hasError,
+    noFoundSearchResult,
+    fetchData: fetchMerchants,
+  } = useFetchingTableData(
+    `api/admin/merchant?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
+    setData,
+    transformMerchants
+  );
   useEffect(() => {
     fetchMerchants();
   }, [fetchMerchants]);
@@ -121,7 +155,7 @@ const CardMerchantTable = () => {
           const rowItemId = cell.row.values.id;
 
           return (
-            <div>
+            <FunctionalitiesDiv>
               <button
                 className="btn btn-success"
                 onClick={() => copyInfoHandler(rowValues)}
@@ -141,7 +175,7 @@ const CardMerchantTable = () => {
               >
                 <FontAwesomeIcon icon={solid("trash-can")} />
               </button>
-            </div>
+            </FunctionalitiesDiv>
           );
         },
       },
@@ -182,30 +216,6 @@ const CardMerchantTable = () => {
     }
   }
 
-  function nextPageHandler() {
-    if (currentPage < lastPage) {
-      setCurrentPage((previousPage) => previousPage + 1);
-    }
-  }
-
-  function previousPageHandler() {
-    if (currentPage > 1) {
-      setCurrentPage((previousPage) => previousPage - 1);
-    }
-  }
-
-  function firstPageHandler() {
-    setCurrentPage(1);
-  }
-
-  function lastPageHandler() {
-    setCurrentPage(lastPage);
-  }
-
-  function changePageOnClickedValue(e) {
-    setCurrentPage(+e.target.value);
-  }
-
   const tableInstance = useTable(
     { columns, data },
 
@@ -216,17 +226,13 @@ const CardMerchantTable = () => {
     usePagination,
     useRowSelect
   );
-  const { getTableProps, getTableBodyProps, headerGroups, page, prepareRow } =
+  const { getTableProps, headerGroups, getTableBodyProps, rows, prepareRow } =
     tableInstance;
 
   // Editing warehouse id state
   const [editingMerchantId, setEditingMerchantId] = useState(null);
 
-  // Modal State
-  const [show, setShow] = useState(false);
-  // Modal Handlers
-  const handleShow = () => setShow(true);
-  const handleClose = () => setShow(false);
+  const { show, setShow, handleShow, handleClose } = useModal();
 
   return (
     <div className="col-12">
@@ -258,7 +264,10 @@ const CardMerchantTable = () => {
               {/*/!*</Button>*!/*/}
             </div>
             <div className="col-md-6 text-right">
-              <GlobalFilter filter={filter} setFilter={setFilter} />
+              <ServerFilter
+                filter={filter}
+                filterChangeHandler={filterChangeHandler}
+              />
               <select
                 value={itemPerPage}
                 onChange={(e) => {
@@ -276,132 +285,26 @@ const CardMerchantTable = () => {
               </select>
             </div>
           </div>
-          <table
-            id="stock-table"
-            className="table table-bordered table-hover table-responsive"
-            {...getTableProps()}
-          >
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th
-                      {...column.getHeaderProps(column.getSortByToggleProps())}
-                      {...column.getHeaderProps()}
-                    >
-                      {column.render("Header")}{" "}
-                      <span>
-                        {column.isSorted ? (
-                          column.isSortedDesc ? (
-                            <FontAwesomeIcon icon={solid("arrow-down")} />
-                          ) : (
-                            <FontAwesomeIcon icon={solid("arrow-up")} />
-                          )
-                        ) : (
-                          ""
-                        )}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-
-            <tbody {...getTableBodyProps()}>
-              {isLoading && (
-                <tr>
-                  <td style={{ textAlign: "center" }} colSpan="100%">
-                    Đang tải thông tin...
-                  </td>
-                </tr>
-              )}
-              {hasError && (
-                <tr>
-                  <td style={{ textAlign: "center" }} colSpan="100%">
-                    Đã có lỗi xảy ra
-                  </td>
-                </tr>
-              )}
-              {noFoundSearchResult && (
-                <tr>
-                  <td style={{ textAlign: "center" }} colSpan="100%">
-                    Không tìm nhà kho nào theo đúng nhu cầu của bạn.
-                  </td>
-                </tr>
-              )}
-
-              {page.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell, i) => {
-                      return (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <div style={{ textAlign: "right" }}>
-            <ul className="pagination">
-              <li className="page-item" onClick={firstPageHandler}>
-                <button className="page-link">&laquo;</button>
-              </li>
-              <li className="page-item" onClick={previousPageHandler}>
-                <button className="page-link" aria-label="Previous">
-                  <span aria-hidden="true">&larr;</span>
-                  <span className="sr-only">Previous</span>
-                </button>
-              </li>
-
-              {currentPage > 2 && (
-                <li className="page-item">
-                  <button className="page-link" disabled>
-                    ...
-                  </button>
-                </li>
-              )}
-              {Array.from(Array(lastPage), (e, i) => {
-                return (
-                  <div key={i}>
-                    {i >= currentPage - 2 && i <= currentPage + 2 && (
-                      <li
-                        className={`page-item ${
-                          Number(currentPage) === i + 1 ? "active" : ""
-                        }`}
-                      >
-                        <button
-                          onClick={changePageOnClickedValue}
-                          className="page-link"
-                          value={i + 1}
-                        >
-                          {i + 1}
-                        </button>
-                      </li>
-                    )}
-                  </div>
-                );
-              })}
-              {currentPage < lastPage - 3 && (
-                <li className="page-item">
-                  <button className="page-link" disabled>
-                    ...
-                  </button>
-                </li>
-              )}
-              <li className="page-item" onClick={nextPageHandler}>
-                <button className="page-link" aria-label="Next">
-                  <span aria-hidden="true">&rarr;</span>
-                  <span className="sr-only">Next</span>
-                </button>
-              </li>
-              <li className="page-item" onClick={lastPageHandler}>
-                <button className="page-link">&raquo;</button>
-              </li>
-            </ul>
-          </div>
+          <ReactTable
+            getTableProps={getTableProps}
+            headerGroups={headerGroups}
+            getTableBodyProps={getTableBodyProps}
+            rows={rows}
+            prepareRow={prepareRow}
+            isLoading={isLoading}
+            hasError={hasError}
+            noFoundSearchResult={noFoundSearchResult}
+            colSpan={6}
+          />
+          <AdminPagination
+            firstPageHandler={firstPageHandler}
+            previousPageHandler={previousPageHandler}
+            currentPage={currentPage}
+            lastPage={lastPage}
+            changePageOnClickedValue={changePageOnClickedValue}
+            nextPageHandler={nextPageHandler}
+            lastPageHandler={lastPageHandler}
+          />
         </div>
       </div>
       <ModalEditMerchant

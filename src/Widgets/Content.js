@@ -129,18 +129,7 @@ const Content = () => {
             {/*  }*/}
             {/*/>*/}
           </Route>
-
-          {/*<Preloader />*/}
-
-          {/*<Route path="/enterstock" element={<EnterStockContent />} />*/}
         </Routes>
-
-        {/*<StillInWarehouseContent />*/}
-        {/*<SalesNumberContent />*/}
-        {/*<SpendMoneyContent />*/}
-        {/*<RevenueContent />*/}
-        {/*<SettingContent />*/}
-        {/*<Footer />*/}
         {hasMessage && (
           <MessageAlert heading={heading} content={content} variant={variant} />
         )}

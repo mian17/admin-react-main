@@ -153,7 +153,7 @@ export const ProductSchema = Yup.object().shape({
     )
     .required("Không để trống mã SKU của sản phẩm"),
   productName: Yup.string()
-    .min(8, "Dữ liệu cần dài hơn 8 ký tự")
+    .min(6, "Dữ liệu cần dài hơn 6 ký tự")
     .max(50, "Dữ liệu cần ít hơn 50 ký tự")
     .required("Không để trống tên sản phẩm"),
 

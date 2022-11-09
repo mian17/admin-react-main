@@ -29,6 +29,8 @@ import ReactTable from "../../../../../../common/components/ReactTable";
 import { formatMoney } from "../../../../../../common/utils/helperFunctions";
 import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
+import ServerFilter from "../../../../../../common/components/ServerFilter";
+import useServerFilter from "../../../../../../hooks/use-server-filter";
 
 const CardProductsTable = () => {
   const navigate = useNavigate();
@@ -43,6 +45,7 @@ const CardProductsTable = () => {
 
   const {
     currentPage,
+    setCurrentPage,
     lastPage,
     setLastPage,
     nextPageHandler,
@@ -52,10 +55,13 @@ const CardProductsTable = () => {
     changePageOnClickedValue,
   } = useAdminPagination();
 
-  const [filter, setFilter] = useState("");
-  const filterChangeHandler = (e) => {
-    setFilter(e.target.value);
-  };
+  // const [filter, setFilter] = useState("");
+  // const filterChangeHandler = (e) => {
+  //   setFilter(e.target.value);
+  //   setCurrentPage(1);
+  // };
+
+  const { filter, filterChangeHandler } = useServerFilter(setCurrentPage);
 
   // React Table Handler
   // const fetchProducts = useCallback(async () => {
@@ -340,10 +346,10 @@ const CardProductsTable = () => {
           </div>
           <div className="col-md-6 text-right">
             {/*<GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />*/}
-            <span>
-              <strong className="mr-2">Tìm kiếm</strong>
-              <input value={filter || ""} onChange={filterChangeHandler} />
-            </span>
+            <ServerFilter
+              filter={filter}
+              filterChangeHandler={filterChangeHandler}
+            />
           </div>
         </div>
         {/*Old table with indeterminate selection and sort by clicking table head*/}
@@ -402,6 +408,7 @@ const CardProductsTable = () => {
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
+          colSpan={8}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

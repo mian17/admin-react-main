@@ -1,11 +1,10 @@
 import { Form, Formik } from "formik";
 import { Col, Row } from "react-bootstrap";
 import FormField from "../../../../../../common/components/FormField";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import FormFileUploadWithPreview from "../../../../../../common/components/FormFileUploadWithPreview";
 import { CategorySchema } from "../../../../../../common/utils/validationSchema";
 import Button from "react-bootstrap/Button";
-import apiClient from "../../../../../../api";
 import FormSelectField from "../../../../../../common/components/FormSelectField";
 import CategoryForTable from "./categoryForm-utils/CategoryForTable";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ import Category from "./categoryForm-utils/Category";
 import categoryInputsSubmitHandler from "./server/categoryInputsSubmitHandler";
 import LoadingSpinner from "../../../../../../common/components/LoadingSpinner";
 import MessageContext from "../../../../../../store/message-context";
-import Message from "../../../../../../common/utils/Message";
+import useFetchingFormData from "../../../../../../hooks/use-fetching-form-data";
 
 const CategoryInputs = ({ randomId, categoryId }) => {
   const navigate = useNavigate();
@@ -23,71 +22,102 @@ const CategoryInputs = ({ randomId, categoryId }) => {
   );
   const [categories, setCategories] = useState([]);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
-      const categoriesResponse = await apiClient.get("api/admin/category", {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
-      const transformedCategories = categoriesResponse.data.map((category) => {
-        return new CategoryForTable(
-          category.id,
-          category.name,
-          category["children_recursive"]
-        );
-      });
-      setCategories(transformedCategories);
-    } catch (error) {
-      console.log(error);
-      setMessage(
-        new Message(
-          true,
-          "danger",
-          "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
-        )
+  function transformCategories(response) {
+    return response.data.map((category) => {
+      return new CategoryForTable(
+        category.id,
+        category.name,
+        category["children_recursive"]
       );
-    }
-  }, []);
+    });
+  }
 
-  const fetchCurrentEditingCategoryId = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
-      const currentEditingCategoryResponse = await apiClient.get(
-        `api/admin/category/${categoryId}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      // console.log(currentEditingCategoryResponse.data);
-      const { name, img_url, parent_category_id } =
-        currentEditingCategoryResponse.data;
+  const { fetchData: fetchCategories } = useFetchingFormData(
+    "api/admin/category",
+    setCategories,
+    transformCategories,
+    "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
+  );
+  // const fetchCategories = useCallback(async () => {
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const categoriesResponse = await apiClient.get("api/admin/category", {
+  //       headers: {
+  //         Accept: "application/json",
+  //         Authorization: `Bearer ${userToken}`,
+  //       },
+  //     });
+  //     const transformedCategories = categoriesResponse.data.map((category) => {
+  //       return new CategoryForTable(
+  //         category.id,
+  //         category.name,
+  //         category["children_recursive"]
+  //       );
+  //     });
+  //     setCategories(transformedCategories);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setMessage(
+  //       new Message(
+  //         true,
+  //         "danger",
+  //         "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
+  //       )
+  //     );
+  //   }
+  // }, []);
 
-      setInitialFormValue(
-        new Category(
-          name,
-          parent_category_id === null ? "" : parent_category_id.toString(),
-          img_url
-        )
-      );
-    } catch (error) {
-      console.log(error);
-      setMessage(
-        new Message(
-          true,
-          "danger",
-          "Không lấy được thông tin danh mục cần chỉnh sửa! Bạn hãy thử refresh lại trang."
-        )
-      );
-    }
-  }, [categoryId]);
+  function transformCurrentEditingCategoryId(response) {
+    const { name, img_url, parent_category_id } = response.data;
+
+    return new Category(
+      name,
+      parent_category_id === null ? "" : parent_category_id.toString(),
+      img_url
+    );
+  }
+  const { fetchData: fetchCurrentEditingCategoryId } = useFetchingFormData(
+    `api/admin/category/${categoryId}`,
+    setInitialFormValue,
+    transformCurrentEditingCategoryId,
+    "Không lấy được thông tin danh mục mà bạn cần chỉnh sửa! Bạn hãy thử refresh lại trang."
+  );
+  // const fetchCurrentEditingCategoryId = useCallback(async () => {
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const currentEditingCategoryResponse = await apiClient.get(
+  //       `api/admin/category/${categoryId}`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${userToken}`,
+  //         },
+  //       }
+  //     );
+  //     // console.log(currentEditingCategoryResponse.data);
+  //     const { name, img_url, parent_category_id } =
+  //       currentEditingCategoryResponse.data;
+  //
+  //     setInitialFormValue(
+  //       new Category(
+  //         name,
+  //         parent_category_id === null ? "" : parent_category_id.toString(),
+  //         img_url
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+  //     setMessage(
+  //       new Message(
+  //         true,
+  //         "danger",
+  //         "Không lấy được thông tin danh mục cần chỉnh sửa! Bạn hãy thử refresh lại trang."
+  //       )
+  //     );
+  //   }
+  // }, [categoryId]);
 
   useEffect(() => {
     fetchCategories();
@@ -110,14 +140,14 @@ const CategoryInputs = ({ randomId, categoryId }) => {
       ))}
     </React.Fragment>
   ));
-
   return (
     <Formik
       initialValues={initialFormValue}
       validationSchema={CategorySchema}
       onSubmit={categoryInputsSubmitHandler(
         navigate,
-        categoryId ? categoryId : null
+        categoryId ? categoryId : null,
+        setMessage
       )}
       enableReinitialize
     >

@@ -7,3 +7,4 @@ export const orderStatuses = [
   "Đã hủy",
   "Yêu cầu đổi trả, hoàn tiền",
 ];
+export const MESSAGE_TIMEOUT = 2000;

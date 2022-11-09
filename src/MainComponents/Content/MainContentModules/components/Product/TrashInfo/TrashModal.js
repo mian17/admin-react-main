@@ -3,18 +3,32 @@ import classes from "../../CardTable/CardProductsTable/CardProductsTable.module.
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {useExpanded, useGlobalFilter, useGroupBy, useRowSelect, useSortBy, useTable,} from "react-table";
-import {Modal, Table} from "react-bootstrap";
+import {Modal} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import apiClient from "../../../../../../api";
 import ProductInTable from "../../CardTable/CardProductsTable/cardProductsTableUtils/ProductInTable";
 import {backendServerPath} from "../../../../../../utilities/backendServerPath";
 import {useNavigate} from "react-router-dom";
+import FunctionalitiesDiv from "../../../../../../common/components/FunctionalitiesDiv";
+import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
+import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
+import ReactTable from "../../../../../../common/components/ReactTable";
+import AdminPagination from "../../../../../../common/components/AdminPagination";
 // import { confirm } from "react-confirm-box";
 
 export default function TrashModel(props) {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(2);
+  const {
+    currentPage,
+    lastPage,
+    setLastPage,
+    nextPageHandler,
+    previousPageHandler,
+    firstPageHandler,
+    lastPageHandler,
+    changePageOnClickedValue,
+  } = useAdminPagination();
+
   const [filter, setFilter] = useState("");
   const filterChangeHandler = (e) => {
     setFilter(e.target.value);
@@ -112,10 +126,6 @@ export default function TrashModel(props) {
         Header: "Trạng thái",
         accessor: "status",
       },
-      // {
-      //   Header: "Nhà bán",
-      //   accessor: "merchant",
-      // },
       {
         Header: "Chức năng",
         accessor: "functions",
@@ -125,7 +135,7 @@ export default function TrashModel(props) {
           const rowItemId = cell.row.values.id; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
-            <div>
+            <FunctionalitiesDiv>
               <button
                 className="btn btn-success"
                 onClick={() => restoreItem(rowItemId)}
@@ -138,7 +148,7 @@ export default function TrashModel(props) {
               >
                 <FontAwesomeIcon icon={solid("trash-can")} /> Xóa vĩnh viễn
               </button>
-            </div>
+            </FunctionalitiesDiv>
           );
         },
       },
@@ -146,44 +156,76 @@ export default function TrashModel(props) {
     [directlyDeleteItem, restoreItem]
   );
 
-  const fetchProductsInTrash = useCallback(async () => {
-    try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-      await apiClient.get("/sanctum/csrf-cookie");
-      const response = await apiClient.get(
-        `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+  // const fetchProductsInTrash = useCallback(async () => {
+  //   try {
+  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+  //     await apiClient.get("/sanctum/csrf-cookie");
+  //     const response = await apiClient.get(
+  //       `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${userToken}`,
+  //         },
+  //       }
+  //     );
+  //     // console.log(response.data);
+  //
+  //     setLastPage(response.data.last_page);
+  //     const transformedProducts = response.data.data.map((product) => {
+  //       const productQuantity = product.kinds.reduce((prevVal, kind) => {
+  //         return prevVal + kind.quantity;
+  //       }, 0);
+  //
+  //       return new ProductInTable(
+  //         product.id,
+  //         backendServerPath + product.kinds[0].image_1,
+  //         product.name,
+  //         productQuantity,
+  //         product.price,
+  //         "Trong thùng rác",
+  //         product.category.name,
+  //         product.brand
+  //       );
+  //     });
+  //
+  //     setData(transformedProducts);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, [currentPage, filter]);
+
+  function transformProductsInTrash(response) {
+    setLastPage(response.data.last_page);
+    return response.data.data.map((product) => {
+      const productQuantity = product.kinds.reduce((prevVal, kind) => {
+        return prevVal + kind.quantity;
+      }, 0);
+
+      return new ProductInTable(
+        product.id,
+        backendServerPath + product.kinds[0].image_1,
+        product.name,
+        productQuantity,
+        product.price,
+        "Trong thùng rác",
+        product.category.name,
+        product.brand
       );
-      // console.log(response.data);
+    });
+  }
+  // console.log(transformProductsInTrash);
 
-      setLastPage(response.data.last_page);
-      const transformedProducts = response.data.data.map((product) => {
-        const productQuantity = product.kinds.reduce((prevVal, kind) => {
-          return prevVal + kind.quantity;
-        }, 0);
-
-        return new ProductInTable(
-          product.id,
-          backendServerPath + product.kinds[0].image_1,
-          product.name,
-          productQuantity,
-          product.price,
-          "Trong thùng rác",
-          product.category.name,
-          product.brand
-        );
-      });
-
-      setData(transformedProducts);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [currentPage, filter]);
+  const {
+    isLoading,
+    hasError,
+    noFoundSearchResult,
+    fetchData: fetchProductsInTrash,
+  } = useFetchingTableData(
+    `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
+    setData,
+    transformProductsInTrash
+  );
 
   useEffect(() => {
     fetchProductsInTrash();
@@ -222,29 +264,29 @@ export default function TrashModel(props) {
     // selectedFlatRows,
   } = tableInstance;
 
-  function nextPageHandler() {
-    if (currentPage < lastPage) {
-      setCurrentPage((previousPage) => previousPage + 1);
-    }
-  }
-
-  function previousPageHandler() {
-    if (currentPage > 1) {
-      setCurrentPage((previousPage) => previousPage - 1);
-    }
-  }
-
-  function firstPageHandler() {
-    setCurrentPage(1);
-  }
-
-  function lastPageHandler() {
-    setCurrentPage(lastPage);
-  }
-
-  function changePageOnClickedValue(e) {
-    setCurrentPage(+e.target.value);
-  }
+  // function nextPageHandler() {
+  //   if (currentPage < lastPage) {
+  //     setCurrentPage((previousPage) => previousPage + 1);
+  //   }
+  // }
+  //
+  // function previousPageHandler() {
+  //   if (currentPage > 1) {
+  //     setCurrentPage((previousPage) => previousPage - 1);
+  //   }
+  // }
+  //
+  // function firstPageHandler() {
+  //   setCurrentPage(1);
+  // }
+  //
+  // function lastPageHandler() {
+  //   setCurrentPage(lastPage);
+  // }
+  //
+  // function changePageOnClickedValue(e) {
+  //   setCurrentPage(+e.target.value);
+  // }
   return (
     <Modal
       size="lg"
@@ -256,110 +298,37 @@ export default function TrashModel(props) {
         <Modal.Title>Thùng rác</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="col-md-6 text-right">
-          <span>
-            <strong className="mr-2">Tìm kiếm</strong>
-            <input value={filter || ""} onChange={filterChangeHandler} />
-          </span>
+        <div className="row mb-2">
+          <div className="col-sm-6">&nbsp;</div>
+
+          <div className="col-sm-6 text-right">
+            <span>
+              <strong className="mr-2">Tìm kiếm</strong>
+              <input value={filter || ""} onChange={filterChangeHandler} />
+            </span>
+          </div>
         </div>
-        <Table {...getTableProps()} striped bordered hover>
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    {...column.getHeaderProps()}
-                  >
-                    {column.render("Header")}
-                    <span>
-                      {column.isSorted ? (
-                        column.isSortedDesc ? (
-                          <FontAwesomeIcon icon={solid("arrow-down")} />
-                        ) : (
-                          <FontAwesomeIcon icon={solid("arrow-up")} />
-                        )
-                      ) : (
-                        ""
-                      )}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
-        <ul className="pagination">
-          <li className="page-item" onClick={firstPageHandler}>
-            <button className="page-link">&laquo;</button>
-          </li>
-          <li className="page-item" onClick={previousPageHandler}>
-            <button className="page-link" aria-label="Previous">
-              <span aria-hidden="true">&larr;</span>
-              <span className="sr-only">Previous</span>
-            </button>
-          </li>
-
-          {currentPage > 2 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          {Array.from(Array(lastPage), (e, i) => {
-            return (
-              <div key={i}>
-                {i >= currentPage - 2 && i <= currentPage + 2 && (
-                  <li
-                    className={`page-item ${
-                      Number(currentPage) === i + 1 ? "active" : ""
-                    }`}
-                  >
-                    <button
-                      onClick={changePageOnClickedValue}
-                      className="page-link"
-                      value={i + 1}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                )}
-              </div>
-            );
-          })}
-          {currentPage < lastPage - 3 && (
-            <li className="page-item">
-              <button className="page-link" disabled>
-                ...
-              </button>
-            </li>
-          )}
-          <li className="page-item" onClick={nextPageHandler}>
-            <button className="page-link" aria-label="Next">
-              <span aria-hidden="true">&rarr;</span>
-              <span className="sr-only">Next</span>
-            </button>
-          </li>
-          <li className="page-item" onClick={lastPageHandler}>
-            <button className="page-link">&raquo;</button>
-          </li>
-        </ul>
+        <ReactTable
+          getTableProps={getTableProps}
+          headerGroups={headerGroups}
+          getTableBodyProps={getTableBodyProps}
+          rows={rows}
+          prepareRow={prepareRow}
+          isLoading={isLoading}
+          hasError={hasError}
+          noFoundSearchResult={noFoundSearchResult}
+          colSpan={8}
+          emptyMessage="Không có sản phẩm nào trong thùng rác"
+        />
+        <AdminPagination
+          firstPageHandler={firstPageHandler}
+          previousPageHandler={previousPageHandler}
+          currentPage={currentPage}
+          lastPage={lastPage}
+          changePageOnClickedValue={changePageOnClickedValue}
+          nextPageHandler={nextPageHandler}
+          lastPageHandler={lastPageHandler}
+        />
       </Modal.Body>
       <Modal.Footer>
         <Button variant="primary" onClick={props.onHide}>

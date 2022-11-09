@@ -23,7 +23,7 @@ const infoDetailsConfig = [
     // id: 2,
     // num: 150,
     // unit: "",
-    labelDataType: "Lượt đăng ký mới",
+    labelDataType: "Lượt đăng ký mới tháng này",
     icon: "fas fa-user-plus",
     bootstrapBackground: "bg-warning",
   },

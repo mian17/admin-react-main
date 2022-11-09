@@ -486,16 +486,18 @@ const ProductInputs = (props) => {
                           </Row>
                         </Col>
                         <Col md="auto">
-                          <Button
-                            style={{
-                              height: "fit-content",
-                              borderRadius: "50%",
-                            }}
-                            className="btn-danger"
-                            onClick={() => remove(index)}
-                          >
-                            <FontAwesomeIcon icon={solid("trash-can")} />
-                          </Button>
+                          {!props.productId && (
+                            <Button
+                              style={{
+                                height: "fit-content",
+                                borderRadius: "50%",
+                              }}
+                              className="btn-danger"
+                              onClick={() => remove(index)}
+                            >
+                              <FontAwesomeIcon icon={solid("trash-can")} />
+                            </Button>
+                          )}
                         </Col>
                       </Row>
                     );
@@ -503,12 +505,14 @@ const ProductInputs = (props) => {
 
                 <Row style={{ justifyContent: "center" }}>
                   <div style={{ textAlign: "center" }}>
-                    <Button
-                      style={{ textAlign: "center" }}
-                      onClick={addCategoricalInfoClickHandler(push, values)}
-                    >
-                      Thêm kiểu loại
-                    </Button>
+                    {!props.productId && (
+                      <Button
+                        style={{ textAlign: "center" }}
+                        onClick={addCategoricalInfoClickHandler(push, values)}
+                      >
+                        Thêm kiểu loại
+                      </Button>
+                    )}
                   </div>
                 </Row>
               </>

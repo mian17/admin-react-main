@@ -10,6 +10,8 @@ const ReactTable = ({
   isLoading,
   hasError,
   noFoundSearchResult,
+  colSpan = 6,
+  emptyMessage,
 }) => {
   return (
     <Table
@@ -37,22 +39,29 @@ const ReactTable = ({
       <tbody {...getTableBodyProps()}>
         {isLoading && (
           <tr>
-            <td style={{ textAlign: "center" }} colSpan={6}>
+            <td style={{ textAlign: "center" }} colSpan={colSpan}>
               Đang tải thông tin...
             </td>
           </tr>
         )}
         {hasError && (
           <tr>
-            <td style={{ textAlign: "center" }} colSpan={6}>
+            <td style={{ textAlign: "center" }} colSpan={colSpan}>
               Đã có lỗi xảy ra
             </td>
           </tr>
         )}
         {noFoundSearchResult && (
           <tr>
-            <td style={{ textAlign: "center" }} colSpan={6}>
-              Không tìm thấy người dùng nào theo đúng nhu cầu của bạn.
+            <td style={{ textAlign: "center" }} colSpan={colSpan}>
+              Không tìm thấy thông tin nào theo đúng nhu cầu của bạn.
+            </td>
+          </tr>
+        )}
+        {rows.length === 0 && (
+          <tr>
+            <td style={{ textAlign: "center" }} colSpan={colSpan}>
+              {emptyMessage}
             </td>
           </tr>
         )}

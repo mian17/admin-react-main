@@ -1,9 +1,15 @@
 import MessageContext from "../../store/message-context";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import Message from "../utils/Message";
 
 const MessageAlert = ({ variant, content }) => {
-  const { setMessage } = useContext(MessageContext);
+  const { hasMessage, setMessage } = useContext(MessageContext);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setMessage(new Message());
+    }, 5000);
+  }, [hasMessage, setMessage]);
 
   return (
     <div

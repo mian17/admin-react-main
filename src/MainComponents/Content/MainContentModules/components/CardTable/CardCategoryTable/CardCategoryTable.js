@@ -17,6 +17,7 @@ import ReactTable from "../../../../../../common/components/ReactTable";
 import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import MessageContext from "../../../../../../store/message-context";
+import FunctionalitiesDiv from "../../../../../../common/components/FunctionalitiesDiv";
 
 // function recursiveChildrenCategoryAddition(category, parentCategoryReadyToPush, transformedCategories) {
 //   if (category.children_recursive.length > 0) {
@@ -104,7 +105,7 @@ const CardCategoryTable = () => {
           const rowItemId = cell.row.values.id; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
-            <div>
+            <FunctionalitiesDiv hasNoSpaceBetween>
               <button
                 className="btn btn-warning mr-2"
                 onClick={() => editInfoHandler(rowItemId)}
@@ -117,7 +118,7 @@ const CardCategoryTable = () => {
               >
                 <FontAwesomeIcon icon={solid("trash-can")} />
               </button>
-            </div>
+            </FunctionalitiesDiv>
           );
         },
       },
@@ -192,7 +193,6 @@ const CardCategoryTable = () => {
     isLoading,
     hasError,
     noFoundSearchResult,
-
     fetchData: fetchCategories,
   } = useFetchingTableData(
     "api/admin/category",
@@ -274,6 +274,7 @@ const CardCategoryTable = () => {
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
+          colSpan={5}
         />
       </div>
       <ModalEditCategory

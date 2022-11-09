@@ -7,7 +7,9 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess) => {
   const [hasError, setHasError] = useState(false);
   const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
 
+  console.log(apiUrl);
   const fetchData = useCallback(async () => {
+    setHasError(false);
     setNoFoundSearchResult(false);
     setIsLoading(true);
     setData([]);
@@ -21,10 +23,13 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess) => {
           Authorization: `Bearer ${userToken}`,
         },
       });
+      // console.log(response);
       const transformedData = functionToProcess(response);
+      if (transformedData.length === 0) setNoFoundSearchResult(true);
+      // console.log(transformedData);
       setData(transformedData);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setHasError(true);
       // alert("Đã có lỗi xảy ra trong quá trình tải các danh mục.");
     }

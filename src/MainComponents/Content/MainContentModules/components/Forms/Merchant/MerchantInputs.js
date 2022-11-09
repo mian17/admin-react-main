@@ -50,7 +50,7 @@ const MerchantInputs = (props) => {
         await apiClient.get("/sanctum/csrf-cookie");
 
         const response = await apiClient.get(
-          `api/admin/warehouse/${currentEditingMerchantId}`,
+          `api/admin/merchant/${currentEditingMerchantId}`,
           {
             headers: {
               Accept: "application/json",
@@ -58,8 +58,8 @@ const MerchantInputs = (props) => {
             },
           }
         );
-
-        const merchantResponse = response.data;
+        console.log(response);
+        const merchantResponse = response.data.merchant;
         setInitialFormValue(
           new Merchant(
             merchantResponse.name,
