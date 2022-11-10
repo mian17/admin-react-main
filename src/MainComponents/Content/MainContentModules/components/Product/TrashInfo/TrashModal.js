@@ -224,7 +224,8 @@ export default function TrashModel(props) {
   } = useFetchingTableData(
     `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
     setData,
-    transformProductsInTrash
+    transformProductsInTrash,
+    filter
   );
 
   useEffect(() => {

@@ -138,7 +138,7 @@ const CardUsersTable = () => {
         );
 
         apiClient
-          .get(`api/admin/user-to-tra/${userUuid}`, {
+          .get(`api/admin/user-to-trash/${userUuid}`, {
             headers: {
               Accept: "application/json",
               Authorization: `Bearer ${userToken}`,
@@ -296,7 +296,8 @@ const CardUsersTable = () => {
   } = useFetchingTableData(
     `api/admin/user?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
     setData,
-    transformUsers
+    transformUsers,
+    filter
   );
 
   useEffect(() => {

@@ -185,9 +185,9 @@ const LogIn = () => {
               {/*  /!*  Đăng ký tài khoản mới*!/*/}
               {/*  /!*</a>*!/*/}
               {/*</p>*/}
-              <p className="mb-1">
-                <a href="/src/pages">Quên mật khẩu</a>
-              </p>
+              {/*<p className="mb-1">*/}
+              {/*  <a href="/src/pages">Quên mật khẩu</a>*/}
+              {/*</p>*/}
             </div>
           </div>
         </div>

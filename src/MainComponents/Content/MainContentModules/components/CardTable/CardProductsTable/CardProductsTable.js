@@ -210,7 +210,8 @@ const CardProductsTable = () => {
   } = useFetchingTableData(
     `api/admin/product?page=${currentPage}&filter=${filter}`,
     setData,
-    transformProductResponse
+    transformProductResponse,
+    filter
   );
 
   useEffect(() => {

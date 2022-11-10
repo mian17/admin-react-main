@@ -5,9 +5,10 @@ import apiClient from "../../../../../api";
 const ChatBox = (props) => {
   const [name, setName] = useState("");
   // const [messages, setMessages] = useState(props.messages);
+  const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+
   const fetchCurrentChatWithUser = useCallback(async () => {
     try {
-      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
       await apiClient.get("/sanctum/csrf-cookie");
       const response = await apiClient.get(
         `api/admin/user/${props.recipientUuid}`,

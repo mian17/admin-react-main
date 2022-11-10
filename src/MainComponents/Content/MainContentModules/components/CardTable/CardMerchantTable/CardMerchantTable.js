@@ -110,7 +110,8 @@ const CardMerchantTable = () => {
   } = useFetchingTableData(
     `api/admin/merchant?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
     setData,
-    transformMerchants
+    transformMerchants,
+    filter
   );
   useEffect(() => {
     fetchMerchants();

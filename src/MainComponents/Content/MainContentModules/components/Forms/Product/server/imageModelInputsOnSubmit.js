@@ -23,6 +23,12 @@ export default async function imageModelInputsOnSubmit(values, navigate) {
     alert(response.data.message);
     navigate(0);
   } catch (error) {
-    alert(error.data.message);
+    console.log(error);
+    if (error.response.status === 413) {
+      alert("Bạn tải lên nhiều hình quá");
+    } else {
+      alert(error.response.data.message);
+    }
+    navigate(0);
   }
 }

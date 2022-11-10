@@ -2,7 +2,7 @@ import {useCallback, useState} from "react";
 import apiClient from "../api";
 
 // functionToProcess parameter must RETURN something
-const useFetchingTableData = (apiUrl, setData, functionToProcess) => {
+const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
@@ -25,7 +25,8 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess) => {
       });
       // console.log(response);
       const transformedData = functionToProcess(response);
-      if (transformedData.length === 0) setNoFoundSearchResult(true);
+      if (transformedData.length === 0 && filter.length > 0)
+        setNoFoundSearchResult(true);
       // console.log(transformedData);
       setData(transformedData);
     } catch (error) {

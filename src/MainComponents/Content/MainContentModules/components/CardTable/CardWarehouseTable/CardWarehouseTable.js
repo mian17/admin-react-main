@@ -111,7 +111,8 @@ const CardWarehouseTable = () => {
   } = useFetchingTableData(
     `api/admin/warehouse?page=${currentPage}&itemPerPage=${itemPerPage}&filter=${filter}`,
     setData,
-    transformWarehouses
+    transformWarehouses,
+    filter
   );
   useEffect(() => {
     fetchWarehouses();

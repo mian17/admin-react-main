@@ -323,7 +323,8 @@ const CardOrdersTable = () => {
       filter.length > 3 ? filter : ""
     }`,
     setData,
-    transformOrderResponse
+    transformOrderResponse,
+    filter
   );
 
   const fetchOrderStatuses = useCallback(async () => {

@@ -29,7 +29,7 @@ function newMerchantSubmitHandler(navigate) {
       navigate(0);
       actions.resetForm({ values: new Merchant("", "", "", "") });
     } catch (error) {
-      // alert(error.response.data.message);
+      alert(error.response.data.message);
     }
   };
 }
