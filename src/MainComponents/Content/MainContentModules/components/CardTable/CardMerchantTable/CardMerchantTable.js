@@ -102,6 +102,7 @@ const CardMerchantTable = () => {
       });
     }
   }
+
   const {
     isLoading,
     hasError,
@@ -151,7 +152,7 @@ const CardMerchantTable = () => {
         Header: "Chức năng",
         accessor: "functions",
 
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           const rowValues = cell.row.values;
           const rowItemId = cell.row.values.id;
 
@@ -188,6 +189,7 @@ const CardMerchantTable = () => {
     setEditingMerchantId(merchantId);
     setShow(true);
   }
+
   async function moveToTrash(itemId, navigate) {
     const result = await confirm(
       "Bạn có chắc chắn muốn xóa nhà bán này?",
@@ -296,6 +298,7 @@ const CardMerchantTable = () => {
             hasError={hasError}
             noFoundSearchResult={noFoundSearchResult}
             colSpan={6}
+            emptyMessage="Không có nhà bán nào trong cơ sở dữ liệu"
           />
           <AdminPagination
             firstPageHandler={firstPageHandler}

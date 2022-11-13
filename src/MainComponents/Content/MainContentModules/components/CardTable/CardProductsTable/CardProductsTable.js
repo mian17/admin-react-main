@@ -131,7 +131,7 @@ const CardProductsTable = () => {
         Header: "Đơn giá",
         accessor: "price",
 
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           const price = cell.row.values.price;
 
           return <>{!isNaN(price) ? formatMoney(price) : price}</>;
@@ -410,6 +410,7 @@ const CardProductsTable = () => {
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
           colSpan={8}
+          emptyMessage="Không có sản phẩm nào trong cơ sở dữ liệu"
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

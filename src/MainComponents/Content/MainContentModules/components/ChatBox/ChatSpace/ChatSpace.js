@@ -37,7 +37,7 @@ const ChatSpace = (props) => {
             return (
               <ChatBubbleSelf
                 key={index}
-                profileUrl="http://127.0.0.1:8000/img/avatar/default-avatar.png"
+                profileUrl={props.currentUserAvatarUrl}
                 message={message.content}
               />
             );
@@ -45,7 +45,7 @@ const ChatSpace = (props) => {
           return (
             <ChatBubbleRecipient
               key={index}
-              profileUrl="http://127.0.0.1:8000/img/avatar/default-avatar.png"
+              profileUrl={props.recipientAvatarUrl}
               message={message.content}
             />
           );

@@ -13,6 +13,7 @@ const ReactTable = ({
   colSpan = 6,
   emptyMessage,
 }) => {
+  console.log(rows.length === 0);
   return (
     <Table
       {...getTableProps()}
@@ -58,7 +59,7 @@ const ReactTable = ({
             </td>
           </tr>
         )}
-        {rows.length === 0 && (
+        {rows.length === 0 && !isLoading && !hasError && (
           <tr>
             <td style={{ textAlign: "center" }} colSpan={colSpan}>
               {emptyMessage}

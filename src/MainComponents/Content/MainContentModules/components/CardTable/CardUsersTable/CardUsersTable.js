@@ -103,7 +103,7 @@ const CardUsersTable = () => {
         },
       },
     ],
-    []
+    [] // DO NOT UPDATE DEPENDENCY
   );
 
   function copyInfoHandler(valueObj) {
@@ -129,9 +129,6 @@ const CardUsersTable = () => {
       confirmBoxOptions
     );
     if (result) {
-      setData((prevState) =>
-        prevState.filter((item) => item.uuid !== userUuid)
-      );
       apiClient.get("/sanctum/csrf-cookie").then(() => {
         const userToken = JSON.parse(
           localStorage.getItem("personalAccessToken")
@@ -145,11 +142,19 @@ const CardUsersTable = () => {
             },
           })
           .then((response) => {
+            setData((prevState) =>
+              prevState.filter((item) => item.uuid !== userUuid)
+            );
             alert(response.data.message);
           })
           .catch((error) => {
+            console.log(error);
             if (error) {
-              alert("Đã có lỗi xảy ra");
+              if (error.response.status === 401) {
+                alert(error.response.data.message);
+              } else {
+                alert("Đã có lỗi xảy ra");
+              }
             }
           });
       });
@@ -288,6 +293,7 @@ const CardUsersTable = () => {
       });
     }
   }
+
   const {
     isLoading,
     hasError,
@@ -359,6 +365,7 @@ const CardUsersTable = () => {
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
           colSpan={6}
+          emptyMessage="Không có người dùng nào trong cơ sở dữ liệu"
         />
 
         <AdminPagination

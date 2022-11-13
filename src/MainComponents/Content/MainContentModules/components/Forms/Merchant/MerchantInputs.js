@@ -92,6 +92,7 @@ const MerchantInputs = (props) => {
       enableReinitialize
       validateOnMount={props.editingMerchantId}
     >
+      {/*// THESE UNUSED PARAMETERS CAN BE USED FOR FUTURE UPDATES*/}
       {({ handleSubmit, setFieldValue, values, isValid, isSubmitting }) => (
         <Form className="card-body" onSubmit={handleSubmit}>
           <Row className="mb-3">
@@ -133,7 +134,7 @@ const MerchantInputs = (props) => {
               className="btn btn-primary"
               disabled={!isValid || isSubmitting}
             >
-              {props.editingMerchantId ? "Sửa đổi thông tin" : "Thêm kho"}{" "}
+              {props.editingMerchantId ? "Sửa đổi thông tin" : "Thêm nhà bán"}{" "}
               {isSubmitting && <LoadingSpinner />}
             </button>
           </div>

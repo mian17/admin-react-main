@@ -77,6 +77,7 @@ const CategoryInputs = ({ randomId, categoryId }) => {
       img_url
     );
   }
+
   const { fetchData: fetchCurrentEditingCategoryId } = useFetchingFormData(
     `api/admin/category/${categoryId}`,
     setInitialFormValue,

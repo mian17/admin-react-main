@@ -27,6 +27,7 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
       const transformedData = functionToProcess(response);
       if (transformedData.length === 0 && filter.length > 0)
         setNoFoundSearchResult(true);
+
       // console.log(transformedData);
       setData(transformedData);
     } catch (error) {
@@ -35,7 +36,7 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
       // alert("Đã có lỗi xảy ra trong quá trình tải các danh mục.");
     }
     setIsLoading(false);
-  }, [apiUrl, setData]);
+  }, [apiUrl, setData]); // DO NOT UPDATE THIS DEPENDENCY
 
   return {
     isLoading,

@@ -163,7 +163,7 @@ const CardOrdersTable = () => {
         Header: "Tổng tiền",
         accessor: "totalMoney",
 
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           const totalMoneySpent = cell.row.values.totalMoney;
 
           return (
@@ -180,7 +180,7 @@ const CardOrdersTable = () => {
         accessor: "functions",
 
         Cell: ({ cell }) => {
-          const rowValues = cell.row.values;
+          // const rowValues = cell.row.values;
           const rowItemUuid = cell.row.values.orderUuid; // id from ProductInCart.js constructor
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
@@ -208,7 +208,7 @@ const CardOrdersTable = () => {
         },
       },
     ],
-    [statuses]
+    [statuses] // DO NOT UPDATE THIS DEPENDENCY
   );
 
   function deleteOrder(orderUuid) {
@@ -399,6 +399,7 @@ const CardOrdersTable = () => {
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
           colSpan={8}
+          emptyMessage="Không có đơn hàng nào trong cơ sở dữ liệu"
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

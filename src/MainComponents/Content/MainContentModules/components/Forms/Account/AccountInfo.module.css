@@ -1,18 +1,19 @@
 .account-info-tab {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
+
 .account-info-tab h6 {
-  flex-basis: 200px;
+    flex-basis: 200px;
 }
 
 .account-info-tab h6,
 .account-info-tab p {
-  line-height: 1;
-  margin: 0;
-  padding: 0;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
 }
 
 .font {
-  font-size: 1.2rem;
+    font-size: 1.2rem;
 }

@@ -83,6 +83,11 @@ export default function TrashModel(props) {
             })
             .catch((error) => {
               console.log(error);
+              if (error.response.status === 500) {
+                alert(
+                  "Sản phẩm này đã tồn tại trong giỏ hàng của khách hàng. Bạn không thể xóa vĩnh viễn sản phẩm này được."
+                );
+              }
             });
         });
       }
@@ -214,6 +219,7 @@ export default function TrashModel(props) {
       );
     });
   }
+
   // console.log(transformProductsInTrash);
 
   const {

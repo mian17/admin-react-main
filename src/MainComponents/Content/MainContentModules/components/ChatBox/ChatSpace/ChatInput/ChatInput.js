@@ -7,6 +7,7 @@ const ChatInput = (props) => {
   const handleTextChange = (e) => {
     setMessage(e.target.value);
   };
+
   function sendMessage() {
     if (message.length > 0) {
       const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
@@ -35,6 +36,7 @@ const ChatInput = (props) => {
       setMessage("");
     }
   }
+
   return (
     <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
       <input

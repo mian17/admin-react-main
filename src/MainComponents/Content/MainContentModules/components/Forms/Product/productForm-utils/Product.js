@@ -3,22 +3,17 @@ export default class Product {
     productSku,
     productName,
     productCategory,
-
     productPrice,
     productCostPrice,
-
     productBrand,
     productMass,
     productUnit,
-
     productStatus,
     productMerchant,
     productWarehouse,
-
     productSummary,
     productDescription,
     productDetailInfo,
-
     categoricalInfo
   ) {
     this.productSku = productSku;

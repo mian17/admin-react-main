@@ -152,7 +152,7 @@ const CardWarehouseTable = () => {
         Header: "Chức năng",
         accessor: "functions",
 
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell }) => {
           const rowValues = cell.row.values;
           const rowItemId = cell.row.values.id;
 
@@ -189,6 +189,7 @@ const CardWarehouseTable = () => {
     setEditingWarehouseId(warehouseId);
     setShow(true);
   }
+
   async function moveToTrash(itemId, navigate) {
     const result = await confirm(
       "Bạn có chắc chắn muốn xóa nhà kho này?",
@@ -301,6 +302,7 @@ const CardWarehouseTable = () => {
             hasError={hasError}
             noFoundSearchResult={noFoundSearchResult}
             colSpan={6}
+            emptyMessage="Không có nhà kho nào trong cơ sở dữ liệu"
           />
           <AdminPagination
             firstPageHandler={firstPageHandler}
