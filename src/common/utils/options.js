@@ -5,7 +5,7 @@ export const confirmBoxOptions = {
   },
   render: (message, onConfirm, onCancel) => {
     return (
-      <div className="p-3 confirm-box-custom rounded animate__animated animate__fadeIn ">
+      <div className="p-3 confirm-box-custom rounded animate__animated animate__fadeIn">
         <h5 className="py-3">{message}</h5>
         <div className="text-right">
           <button className="btn btn-outline-secondary" onClick={onConfirm}>

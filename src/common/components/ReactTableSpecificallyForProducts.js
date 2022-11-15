@@ -5,7 +5,7 @@ const ReactTableSpecificallyForProducts = ({
   getTableProps,
   headerGroups,
   getTableBodyProps,
-  page,
+  rows,
   prepareRow,
   isLoading,
   hasError,
@@ -66,21 +66,20 @@ const ReactTableSpecificallyForProducts = ({
         {/*    </td>*/}
         {/*  </tr>*/}
         {/*)}*/}
-        {page &&
-          page.map((row, i) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  return (
-                    <td className="text-center" {...cell.getCellProps()}>
-                      {cell.render("Cell")}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
+        {rows.map((row, i) => {
+          prepareRow(row);
+          return (
+            <tr {...row.getRowProps()}>
+              {row.cells.map((cell) => {
+                return (
+                  <td className="text-center" {...cell.getCellProps()}>
+                    {cell.render("Cell")}
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );

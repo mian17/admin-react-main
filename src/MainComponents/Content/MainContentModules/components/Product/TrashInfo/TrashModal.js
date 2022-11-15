@@ -1,6 +1,5 @@
 import {useCallback, useMemo, useState} from "react";
 import classes from "../../CardTable/CardProductsTable/CardProductsTable.module.css";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {useExpanded, useGlobalFilter, useGroupBy, useRowSelect, useSortBy, useTable,} from "react-table";
 import {Modal} from "react-bootstrap";
@@ -15,6 +14,10 @@ import useFetchingTableData from "../../../../../../hooks/use-fetching-table-dat
 import ReactTable from "../../../../../../common/components/ReactTable";
 import AdminPagination from "../../../../../../common/components/AdminPagination";
 import useDebounce from "../../../../../../hooks/use-debounce";
+import {createIndeterminateCheckboxes} from "../../../../../../common/utils/helperFunctions";
+import TooltipButton from "../../../../../../common/components/TooltipButton";
+import {confirm} from "react-confirm-box";
+import {confirmBoxOptions} from "../../../../../../common/utils/options";
 // import { confirm } from "react-confirm-box";
 
 export default function TrashModel(props) {
@@ -84,11 +87,12 @@ export default function TrashModel(props) {
             })
             .catch((error) => {
               console.log(error);
-              if (error.response.status === 500) {
-                alert(
-                  "Sản phẩm này đã tồn tại trong giỏ hàng của khách hàng. Bạn không thể xóa vĩnh viễn sản phẩm này được."
-                );
-              }
+              // if (error.response.status === 422) {
+              //   alert(
+              //     "Sản phẩm này đã tồn tại trong giỏ hàng của khách hàng. Bạn không thể xóa vĩnh viễn sản phẩm này được."
+              //   );
+              // }
+              alert(error.response.data.message);
             });
         });
       }
@@ -142,18 +146,19 @@ export default function TrashModel(props) {
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
             <FunctionalitiesDiv>
-              <button
-                className="btn btn-success"
-                onClick={() => restoreItem(rowItemId)}
-              >
-                <FontAwesomeIcon icon={solid("rotate-left")} /> Khôi phục
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => directlyDeleteItem(rowItemId)}
-              >
-                <FontAwesomeIcon icon={solid("trash-can")} /> Xóa vĩnh viễn
-              </button>
+              <TooltipButton
+                fontAwesomeIcon={solid("rotate-left")}
+                functionToProcessOnClick={() => restoreItem(rowItemId)}
+                title="Khôi phục"
+                bootstrapVariant="success"
+              />
+
+              <TooltipButton
+                fontAwesomeIcon={solid("trash-can")}
+                functionToProcessOnClick={() => directlyDeleteItem(rowItemId)}
+                title="Xóa vĩnh viễn"
+                bootstrapVariant="danger"
+              />
             </FunctionalitiesDiv>
           );
         },
@@ -161,45 +166,6 @@ export default function TrashModel(props) {
     ],
     [directlyDeleteItem, restoreItem]
   );
-
-  // const fetchProductsInTrash = useCallback(async () => {
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const response = await apiClient.get(
-  //       `api/admin/product-trash?page=${currentPage}&filter=${filter}`,
-  //       {
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${userToken}`,
-  //         },
-  //       }
-  //     );
-  //     // console.log(response.data);
-  //
-  //     setLastPage(response.data.last_page);
-  //     const transformedProducts = response.data.data.map((product) => {
-  //       const productQuantity = product.kinds.reduce((prevVal, kind) => {
-  //         return prevVal + kind.quantity;
-  //       }, 0);
-  //
-  //       return new ProductInTable(
-  //         product.id,
-  //         backendServerPath + product.kinds[0].image_1,
-  //         product.name,
-  //         productQuantity,
-  //         product.price,
-  //         "Trong thùng rác",
-  //         product.category.name,
-  //         product.brand
-  //       );
-  //     });
-  //
-  //     setData(transformedProducts);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, [currentPage, filter]);
 
   function transformProductsInTrash(response) {
     setLastPage(response.data.last_page);
@@ -243,69 +209,103 @@ export default function TrashModel(props) {
     useGroupBy,
     useSortBy,
     useExpanded,
-    useRowSelect
-    // (hooks) => {
-    //   hooks.visibleColumns.push((columns) => {
-    //     return [
-    //       {
-    //         id: "selection",
-    //         Header: ({ getToggleAllRowsSelectedProps }) => (
-    //           <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-    //         ),
-    //         Cell: ({ row }) => (
-    //           <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-    //         ),
-    //       },
-    //       ...columns,
-    //     ];
-    //   });
-    // }
+    useRowSelect,
+    createIndeterminateCheckboxes
   );
+
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-    // selectedFlatRows,
+    selectedFlatRows,
   } = tableInstance;
+  const selectedRowsProductIds = selectedFlatRows.map((row) => row.original.id);
 
-  // function nextPageHandler() {
-  //   if (currentPage < lastPage) {
-  //     setCurrentPage((previousPage) => previousPage + 1);
-  //   }
-  // }
-  //
-  // function previousPageHandler() {
-  //   if (currentPage > 1) {
-  //     setCurrentPage((previousPage) => previousPage - 1);
-  //   }
-  // }
-  //
-  // function firstPageHandler() {
-  //   setCurrentPage(1);
-  // }
-  //
-  // function lastPageHandler() {
-  //   setCurrentPage(lastPage);
-  // }
-  //
-  // function changePageOnClickedValue(e) {
-  //   setCurrentPage(+e.target.value);
-  // }
+  const directlyDeleteBulkProductsHandler = async () => {
+    const result = await confirm(
+      "Bạn có chắc chắn muốn xóa VĨNH VIỄN các sản phẩm này không?",
+      confirmBoxOptions
+    );
+    if (result) {
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+        apiClient
+          .post(
+            `api/admin/directly-remove-products`,
+            { directly_remove_item_ids: selectedRowsProductIds },
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
+          )
+          .then((response) => {
+            console.log(response);
+            // navigate(0);
+          })
+          .catch((error) => {
+            console.log(error);
+            alert(error.message);
+          });
+      });
+    }
+  };
+
+  const restoreBulkProductsHandler = async () => {
+    apiClient.get("/sanctum/csrf-cookie").then(() => {
+      const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
+      apiClient
+        .post(
+          `api/admin/products-trash-restore/`,
+          { restore_item_ids: selectedRowsProductIds },
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response);
+          navigate(0);
+        })
+        .catch((error) => {
+          console.log(error);
+          alert(error.message);
+        });
+    });
+  };
+
   return (
-    <Modal
-      size="lg"
-      show={props.show}
-      onHide={props.onHide}
-      // style={{ zIndex: 4 }}
-    >
+    <Modal size="lg" show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
         <Modal.Title>Thùng rác</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="row mb-2">
-          <div className="col-sm-6">&nbsp;</div>
+          <div className="col-sm-6">
+            {selectedRowsProductIds && selectedRowsProductIds.length > 0 && (
+              <div className="d-flex" style={{ gap: 4 }}>
+                <TooltipButton
+                  fontAwesomeIcon={solid("rotate-left")}
+                  functionToProcessOnClick={restoreBulkProductsHandler}
+                  title="Khôi phục"
+                  bootstrapVariant="success"
+                />
+                <TooltipButton
+                  fontAwesomeIcon={solid("trash-can")}
+                  functionToProcessOnClick={directlyDeleteBulkProductsHandler}
+                  title="Xóa vĩnh viễn"
+                  bootstrapVariant="danger"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="col-sm-6 text-right">
             <span>
@@ -323,7 +323,7 @@ export default function TrashModel(props) {
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
-          colSpan={8}
+          colSpan={9}
           emptyMessage="Không có sản phẩm nào trong thùng rác"
           filter={filter}
         />

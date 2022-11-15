@@ -12,7 +12,6 @@ import {
 // import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
 import { productsInTableRows } from "./cardProductsTable-test-data/productsInTable-rows";
 import { confirm } from "react-confirm-box";
-
 import { confirmBoxOptions } from "../../../../../../common/utils/options";
 import Button from "react-bootstrap/Button";
 
@@ -26,24 +25,23 @@ import { useNavigate } from "react-router-dom";
 import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
 import AdminPagination from "../../../../../../common/components/AdminPagination";
 import ReactTable from "../../../../../../common/components/ReactTable";
-import { formatMoney } from "../../../../../../common/utils/helperFunctions";
+import {
+  createIndeterminateCheckboxes,
+  formatMoney,
+} from "../../../../../../common/utils/helperFunctions";
 import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
 import useDebounce from "../../../../../../hooks/use-debounce";
-import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
+import TooltipButton from "../../../../../../common/components/TooltipButton";
 
 const CardProductsTable = () => {
   const navigate = useNavigate();
 
   const { show, setShow, handleShow, handleClose } = useModal();
 
-  // Editing product id state
   const [editingProductId, setEditingProductId] = useState(null);
-
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [lastPage, setLastPage] = useState(2);
 
   const {
     currentPage,
@@ -57,52 +55,7 @@ const CardProductsTable = () => {
     changePageOnClickedValue,
   } = useAdminPagination();
 
-  // const [filter, setFilter] = useState("");
-  // const filterChangeHandler = (e) => {
-  //   setFilter(e.target.value);
-  //   setCurrentPage(1);
-  // };
-
   const { filter, filterChangeHandler } = useServerFilter(setCurrentPage);
-
-  // React Table Handler
-  // const fetchProducts = useCallback(async () => {
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const response = await apiClient.get(
-  //       `api/admin/product?page=${currentPage}&filter=${filter}`,
-  //       {
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${userToken}`,
-  //         },
-  //       }
-  //     );
-  //
-  //     setLastPage(response.data.last_page);
-  //     const transformedProducts = response.data.data.map((product) => {
-  //       const productQuantity = product.kinds.reduce((prevVal, kind) => {
-  //         return prevVal + kind.quantity;
-  //       }, 0);
-  //
-  //       return new ProductInTable(
-  //         product.id,
-  //         backendServerPath + product.kinds[0].image_1,
-  //         product.name,
-  //         productQuantity,
-  //         product.price,
-  //         product.status,
-  //         product.category.name,
-  //         product.brand
-  //       );
-  //     });
-  //
-  //     setData(transformedProducts);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, [currentPage, filter, setLastPage]);
 
   const [data, setData] = useState(useMemo(() => productsInTableRows, []));
 
@@ -217,16 +170,6 @@ const CardProductsTable = () => {
   );
 
   useDebounce(fetchProducts, filter);
-  // useEffect(() => {
-  //   if (
-  //     filter.length > MAXIMUM_SEARCH_KEYWORD_LENGTH_TO_START_SENDING_REQUEST
-  //   ) {
-  //     const getData = setTimeout(fetchProducts, 2000);
-  //     return () => clearTimeout(getData);
-  //   } else {
-  //     fetchProducts();
-  //   }
-  // }, [fetchProducts, filter.length]);
 
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
@@ -277,23 +220,6 @@ const CardProductsTable = () => {
     }
   }
 
-  // Not yet implemented Handler - DO NOT DELETE
-  // const deleteBulkInfoHandler = async () => {
-  //   // a variable from react table library
-  //   const bulkId = selectedFlatRows.map((row) => row.original.id);
-  //   // console.log(bulkId);
-  //
-  //   const result = await confirm(
-  //     "Bạn có chắc chắn muốn xóa các sản phẩm này?",
-  //     confirmBoxOptions
-  //   );
-  //   if (result) {
-  //     setData((prevState) => {
-  //       return prevState.filter((product) => !bulkId.includes(product.id));
-  //     });
-  //   }
-  // };
-
   const tableInstance = useTable(
     { columns, data },
     useGlobalFilter,
@@ -302,22 +228,7 @@ const CardProductsTable = () => {
     useExpanded,
     useRowSelect,
 
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => {
-        return [
-          {
-            id: "selection",
-            Header: ({ getToggleAllRowsSelectedProps }) => (
-              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-            ),
-            Cell: ({ row }) => (
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            ),
-          },
-          ...columns,
-        ];
-      });
-    }
+    createIndeterminateCheckboxes
   );
   const {
     getTableProps,
@@ -325,8 +236,48 @@ const CardProductsTable = () => {
     headerGroups,
     rows,
     prepareRow,
-    // selectedFlatRows,
+    selectedFlatRows,
   } = tableInstance;
+
+  const selectedRowsProductIds = selectedFlatRows.map((row) => row.original.id);
+
+  const deleteBulkInfoHandler = async () => {
+    const result = await confirm(
+      "Bạn có chắc chắn muốn di chuyển các sản phẩm này vào thùng rác?",
+      confirmBoxOptions
+    );
+    if (result) {
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+        apiClient
+          .post(
+            `api/admin/move-products-to-trash/`,
+            { move_to_trash_item_ids: selectedRowsProductIds },
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
+          )
+          .then((response) => {
+            console.log(response);
+            navigate(0);
+          })
+          .catch((error) => {
+            console.log(error);
+            alert(error.message);
+          });
+      });
+      setData((prevState) => {
+        return prevState.filter(
+          (product) => !selectedRowsProductIds.includes(product.id)
+        );
+      });
+    }
+  };
 
   const headers = [
     { label: "Id", key: "id" },
@@ -345,17 +296,25 @@ const CardProductsTable = () => {
       <div className="card-body">
         <div className="row px-2 mb-2 mt-2">
           <div className="col-md-6">
-            <Button
-              as={CSVLink}
-              data={data}
-              headers={headers}
-              variant="secondary"
-            >
-              Xuất file CSV
-            </Button>
-            {/*<Button variant="danger" onClick={deleteBulkInfoHandler}>*/}
-            {/*  Xóa các danh mục đã chọn*/}
-            {/*</Button>*/}
+            {selectedRowsProductIds.length < 1 && (
+              <Button
+                as={CSVLink}
+                data={data}
+                headers={headers}
+                variant="secondary"
+              >
+                Xuất file CSV
+              </Button>
+            )}
+
+            {selectedRowsProductIds && selectedRowsProductIds.length > 0 && (
+              <TooltipButton
+                fontAwesomeIcon={solid("trash-can")}
+                functionToProcessOnClick={deleteBulkInfoHandler}
+                title="Di chuyển vào thùng rác"
+                bootstrapVariant="danger"
+              />
+            )}
           </div>
           <div className="col-md-6 text-right">
             {/*<GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />*/}
@@ -412,6 +371,14 @@ const CardProductsTable = () => {
         {/*    })}*/}
         {/*  </tbody>*/}
         {/*</table>*/}
+        <pre>
+          {JSON.stringify(
+            { selectedFlatRows: selectedFlatRows.map((row) => row.original) },
+            null,
+            2
+          )}
+        </pre>
+
         <ReactTable
           getTableProps={getTableProps}
           headerGroups={headerGroups}
@@ -421,7 +388,7 @@ const CardProductsTable = () => {
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
-          colSpan={8}
+          colSpan={9}
           emptyMessage="Không có sản phẩm nào trong cơ sở dữ liệu"
           filter={filter}
         />

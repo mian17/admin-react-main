@@ -1,6 +1,6 @@
 // import { confirm } from "react-confirm-box";
 import CardOrdersTable
-    from "../MainComponents/Content/MainContentModules/components/CardTable/CardOrdersTable/CardOrdersTable";
+  from "../MainComponents/Content/MainContentModules/components/CardTable/CardOrdersTable/CardOrdersTable";
 import ContentHeader from "../MainComponents/Content/ContentHeader";
 
 // FOR GETTING DATA FROM DATABASE IN THE FUTURE
