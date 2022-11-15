@@ -60,6 +60,7 @@ const EditOrderForm = (props) => {
       setPaymentMethod(receiverInfo.payment_method);
     } catch (err) {
       console.log(err);
+      alert(err.message);
     }
   }, [props.orderUuid]);
 

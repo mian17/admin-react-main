@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
 import classes from "../../CardTable/CardProductsTable/CardProductsTable.module.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
@@ -14,6 +14,7 @@ import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import ReactTable from "../../../../../../common/components/ReactTable";
 import AdminPagination from "../../../../../../common/components/AdminPagination";
+import useDebounce from "../../../../../../hooks/use-debounce";
 // import { confirm } from "react-confirm-box";
 
 export default function TrashModel(props) {
@@ -234,9 +235,7 @@ export default function TrashModel(props) {
     filter
   );
 
-  useEffect(() => {
-    fetchProductsInTrash();
-  }, [fetchProductsInTrash]);
+  useDebounce(fetchProductsInTrash, filter);
 
   const tableInstance = useTable(
     { columns, data },
@@ -326,6 +325,7 @@ export default function TrashModel(props) {
           noFoundSearchResult={noFoundSearchResult}
           colSpan={8}
           emptyMessage="Không có sản phẩm nào trong thùng rác"
+          filter={filter}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

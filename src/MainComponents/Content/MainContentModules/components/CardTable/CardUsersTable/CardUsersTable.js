@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useExpanded,
   useGlobalFilter,
@@ -26,6 +26,7 @@ import FunctionalitiesDiv from "../../../../../../common/components/Functionalit
 import useModal from "../../../../../../hooks/use-modal";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
+import useDebounce from "../../../../../../hooks/use-debounce";
 
 const CardUsersTable = () => {
   const { show, setShow, handleShow, handleClose } = useModal();
@@ -153,7 +154,7 @@ const CardUsersTable = () => {
               if (error.response.status === 401) {
                 alert(error.response.data.message);
               } else {
-                alert("Đã có lỗi xảy ra");
+                alert(error.message);
               }
             }
           });
@@ -279,19 +280,17 @@ const CardUsersTable = () => {
   function transformUsers(response) {
     setLastPage(response.data.last_page);
 
-    if (response.data.data.length > 0) {
-      return response.data.data.map((user) => {
-        return new UserInTable(
-          user.uuid,
-          user.name,
-          user.phone_number,
-          user.address,
-          user.total_money_spent === null
-            ? "Chưa mua hàng lần nào"
-            : user.total_money_spent
-        );
-      });
-    }
+    return response.data.data.map((user) => {
+      return new UserInTable(
+        user.uuid,
+        user.name,
+        user.phone_number,
+        user.address,
+        user.total_money_spent === null
+          ? "Chưa mua hàng lần nào"
+          : user.total_money_spent
+      );
+    });
   }
 
   const {
@@ -305,10 +304,9 @@ const CardUsersTable = () => {
     transformUsers,
     filter
   );
+  // console.table(filter, hasError);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  useDebounce(fetchUsers, filter);
 
   return (
     <div className="card">
@@ -325,7 +323,7 @@ const CardUsersTable = () => {
               headers={headers}
               variant="secondary"
             >
-              Xuất file Excel
+              Xuất file CSV
             </Button>
             {/*<Button variant="danger" onClick={deleteBulkInfoHandler}>*/}
             {/*  Xóa các danh mục đã chọn*/}
@@ -366,6 +364,7 @@ const CardUsersTable = () => {
           noFoundSearchResult={noFoundSearchResult}
           colSpan={6}
           emptyMessage="Không có người dùng nào trong cơ sở dữ liệu"
+          filter={filter}
         />
 
         <AdminPagination

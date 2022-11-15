@@ -1,17 +1,18 @@
-import classes from "../../MainComponents/Content/MainContentModules/components/CardTable/CardCategoryTable/CardCategoryTable.module.css";
 import { Table } from "react-bootstrap";
+import classes from "../../MainComponents/Content/MainContentModules/components/CardTable/CardCategoryTable/CardCategoryTable.module.css";
 
-const ReactTable = ({
+const ReactTableClientPagination = ({
   getTableProps,
   headerGroups,
   getTableBodyProps,
-  rows,
+  page,
   prepareRow,
   isLoading,
   hasError,
   noFoundSearchResult,
   colSpan = 6,
   emptyMessage,
+
   filter = "",
 }) => {
   return (
@@ -52,21 +53,21 @@ const ReactTable = ({
             </td>
           </tr>
         )}
-        {noFoundSearchResult && filter.length > 0 && (
+        {page.length === 0 && filter.length > 0 && (
           <tr>
             <td style={{ textAlign: "center" }} colSpan={colSpan}>
               Không tìm thấy thông tin nào theo đúng nhu cầu của bạn.
             </td>
           </tr>
         )}
-        {rows.length === 0 && filter.length === 0 && !isLoading && !hasError && (
-          <tr>
-            <td style={{ textAlign: "center" }} colSpan={colSpan}>
-              {emptyMessage}
-            </td>
-          </tr>
-        )}
-        {rows.map((row) => {
+        {/*{page.length === 0 && filter.length === 0 && !isLoading && !hasError && (*/}
+        {/*  <tr>*/}
+        {/*    <td style={{ textAlign: "center" }} colSpan={colSpan}>*/}
+        {/*      {emptyMessage}*/}
+        {/*    </td>*/}
+        {/*  </tr>*/}
+        {/*)}*/}
+        {page.map((row) => {
           prepareRow(row);
           return (
             <tr {...row.getRowProps()}>
@@ -87,4 +88,4 @@ const ReactTable = ({
     </Table>
   );
 };
-export default ReactTable;
+export default ReactTableClientPagination;

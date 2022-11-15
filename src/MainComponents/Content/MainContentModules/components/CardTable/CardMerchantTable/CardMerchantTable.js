@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import apiClient from "../../../../../../api";
 import { copyInfoHandler } from "../../../../../../common/utils/tableFunctions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,6 +27,7 @@ import useFetchingTableData from "../../../../../../hooks/use-fetching-table-dat
 import useModal from "../../../../../../hooks/use-modal";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
+import useDebounce from "../../../../../../hooks/use-debounce";
 
 const CardMerchantTable = () => {
   const navigate = useNavigate();
@@ -90,17 +91,16 @@ const CardMerchantTable = () => {
 
   function transformMerchants(response) {
     setLastPage(response.data.last_page);
-    if (response.data.data.length > 0) {
-      return response.data.data.map((merchant) => {
-        return new MerchantInTable(
-          merchant.id,
-          merchant.name,
-          merchant.phone_number,
-          merchant.address,
-          merchant.email
-        );
-      });
-    }
+
+    return response.data.data.map((merchant) => {
+      return new MerchantInTable(
+        merchant.id,
+        merchant.name,
+        merchant.phone_number,
+        merchant.address,
+        merchant.email
+      );
+    });
   }
 
   const {
@@ -114,9 +114,7 @@ const CardMerchantTable = () => {
     transformMerchants,
     filter
   );
-  useEffect(() => {
-    fetchMerchants();
-  }, [fetchMerchants]);
+  useDebounce(fetchMerchants, filter);
 
   const headers = [
     { label: "Id", key: "id" },
@@ -214,6 +212,7 @@ const CardMerchantTable = () => {
           })
           .catch((error) => {
             console.log(error);
+            alert(error.message);
           });
       });
     }
@@ -260,7 +259,7 @@ const CardMerchantTable = () => {
                 headers={headers}
                 variant="secondary"
               >
-                Xuất file Excel
+                Xuất file CSV
               </Button>
               {/*/!*<Button variant="danger" onClick={deleteBulkInfoHandler}>*!/*/}
               {/*/!*  Xóa các danh mục đã chọn*!/*/}
@@ -299,6 +298,7 @@ const CardMerchantTable = () => {
             noFoundSearchResult={noFoundSearchResult}
             colSpan={6}
             emptyMessage="Không có nhà bán nào trong cơ sở dữ liệu"
+            filter={filter}
           />
           <AdminPagination
             firstPageHandler={firstPageHandler}

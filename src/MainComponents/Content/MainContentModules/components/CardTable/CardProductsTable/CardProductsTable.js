@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import {
@@ -31,6 +31,8 @@ import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
+import useDebounce from "../../../../../../hooks/use-debounce";
+import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
 
 const CardProductsTable = () => {
   const navigate = useNavigate();
@@ -214,9 +216,17 @@ const CardProductsTable = () => {
     filter
   );
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  useDebounce(fetchProducts, filter);
+  // useEffect(() => {
+  //   if (
+  //     filter.length > MAXIMUM_SEARCH_KEYWORD_LENGTH_TO_START_SENDING_REQUEST
+  //   ) {
+  //     const getData = setTimeout(fetchProducts, 2000);
+  //     return () => clearTimeout(getData);
+  //   } else {
+  //     fetchProducts();
+  //   }
+  // }, [fetchProducts, filter.length]);
 
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
@@ -261,6 +271,7 @@ const CardProductsTable = () => {
           })
           .catch((error) => {
             console.log(error);
+            alert(error.message);
           });
       });
     }
@@ -289,23 +300,24 @@ const CardProductsTable = () => {
     useGroupBy,
     useSortBy,
     useExpanded,
-    useRowSelect
-    // (hooks) => {
-    //   hooks.visibleColumns.push((columns) => {
-    //     return [
-    //       {
-    //         id: "selection",
-    //         Header: ({ getToggleAllRowsSelectedProps }) => (
-    //           <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-    //         ),
-    //         Cell: ({ row }) => (
-    //           <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-    //         ),
-    //       },
-    //       ...columns,
-    //     ];
-    //   });
-    // }
+    useRowSelect,
+
+    (hooks) => {
+      hooks.visibleColumns.push((columns) => {
+        return [
+          {
+            id: "selection",
+            Header: ({ getToggleAllRowsSelectedProps }) => (
+              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+            ),
+            Cell: ({ row }) => (
+              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+            ),
+          },
+          ...columns,
+        ];
+      });
+    }
   );
   const {
     getTableProps,
@@ -317,7 +329,7 @@ const CardProductsTable = () => {
   } = tableInstance;
 
   const headers = [
-    { label: "SKU", key: "sku" },
+    { label: "Id", key: "id" },
     { label: "Tên sản phẩm", key: "name" },
     { label: "Số lượng", key: "quantity" },
     { label: "Trạng thái", key: "status" },
@@ -339,7 +351,7 @@ const CardProductsTable = () => {
               headers={headers}
               variant="secondary"
             >
-              Xuất file Excel
+              Xuất file CSV
             </Button>
             {/*<Button variant="danger" onClick={deleteBulkInfoHandler}>*/}
             {/*  Xóa các danh mục đã chọn*/}
@@ -411,6 +423,7 @@ const CardProductsTable = () => {
           noFoundSearchResult={noFoundSearchResult}
           colSpan={8}
           emptyMessage="Không có sản phẩm nào trong cơ sở dữ liệu"
+          filter={filter}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

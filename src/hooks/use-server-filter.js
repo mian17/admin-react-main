@@ -6,6 +6,7 @@ const useServerFilter = (setCurrentPage) => {
     setFilter(e.target.value);
     setCurrentPage(1);
   };
+
   return { filter, setFilter, filterChangeHandler };
 };
 export default useServerFilter;

@@ -15,6 +15,7 @@ import useFetchingTableData from "../../../../../../hooks/use-fetching-table-dat
 import LinearProgress from "../../../../../../common/components/LinearProgress";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
+import useDebounce from "../../../../../../hooks/use-debounce";
 
 // const CardOrdersTableMessage = (props) => {
 //   return (
@@ -32,6 +33,84 @@ const CardOrdersTable = () => {
 
   const [data, setData] = useState(useMemo(() => [], []));
   const [progressBarIsShown, setProgressBarIsShown] = useState(false);
+
+  function orderStatusOnChangeHandler(rowItemUuid) {
+    return (e) => {
+      setProgressBarIsShown(true);
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
+        apiClient
+          .patch(
+            `api/admin/order-status-update/${rowItemUuid}`,
+            { status_id: e.target.value },
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
+          )
+          .then((response) => {
+            setTimeout(() => {
+              setProgressBarIsShown(false);
+            }, 300);
+            alert(response.data.message);
+            navigate(0);
+          })
+          .catch((error) => {
+            setTimeout(() => {
+              setProgressBarIsShown(false);
+            }, 300);
+            alert(error.response.data.message);
+            navigate(0);
+          });
+      });
+    };
+  }
+
+  function paymentDetailsOnChangeHandler(rowItemUuid) {
+    return (e) => {
+      setProgressBarIsShown(true);
+
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+
+        apiClient
+          .patch(
+            `api/admin/payment-details/${rowItemUuid}`,
+            { status: e.target.value },
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
+          )
+          .then((response) => {
+            setTimeout(() => {
+              setProgressBarIsShown(false);
+            }, 300);
+            console.log(response);
+            alert(response.data.message);
+            navigate(0);
+          })
+          .catch((error) => {
+            setTimeout(() => {
+              setProgressBarIsShown(false);
+            }, 300);
+            console.log(error);
+            alert(error.message);
+            navigate(0);
+          });
+      });
+    };
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -60,38 +139,7 @@ const CardOrdersTable = () => {
 
           return (
             <select
-              onChange={(e) => {
-                setProgressBarIsShown(true);
-                apiClient.get("/sanctum/csrf-cookie").then(() => {
-                  const userToken = JSON.parse(
-                    localStorage.getItem("personalAccessToken")
-                  );
-
-                  apiClient
-                    .patch(
-                      `api/admin/order-status-update/${rowItemUuid}`,
-                      { status_id: e.target.value },
-                      {
-                        headers: {
-                          Accept: "application/json",
-                          Authorization: `Bearer ${userToken}`,
-                        },
-                      }
-                    )
-                    .then((response) => {
-                      setTimeout(() => {
-                        setProgressBarIsShown(false);
-                      }, 300);
-                      alert(response.data.message);
-                    })
-                    .catch((error) => {
-                      setTimeout(() => {
-                        setProgressBarIsShown(false);
-                      }, 300);
-                      alert(error.response.data.message);
-                    });
-                });
-              }}
+              onChange={orderStatusOnChangeHandler(rowItemUuid)}
               defaultValue={rowValues.orderStatus}
             >
               {statuses.length > 0 &&
@@ -116,41 +164,7 @@ const CardOrdersTable = () => {
           // const rowItemId = row.index; // id from ProductInCart.js constructor
           return (
             <select
-              onChange={(e) => {
-                console.log("ran");
-                setProgressBarIsShown(true);
-
-                apiClient.get("/sanctum/csrf-cookie").then(() => {
-                  const userToken = JSON.parse(
-                    localStorage.getItem("personalAccessToken")
-                  );
-
-                  apiClient
-                    .patch(
-                      `api/admin/payment-details/${rowItemUuid}`,
-                      { status: e.target.value },
-                      {
-                        headers: {
-                          Accept: "application/json",
-                          Authorization: `Bearer ${userToken}`,
-                        },
-                      }
-                    )
-                    .then((response) => {
-                      setTimeout(() => {
-                        setProgressBarIsShown(false);
-                      }, 300);
-                      console.log(response);
-                      alert(response.data.message);
-                    })
-                    .catch((error) => {
-                      setTimeout(() => {
-                        setProgressBarIsShown(false);
-                      }, 300);
-                      console.log(error);
-                    });
-                });
-              }}
+              onChange={paymentDetailsOnChangeHandler(rowItemUuid)}
               defaultValue={rowValues.paymentStatus}
             >
               <option value="Chưa thanh toán">Chưa thanh toán</option>
@@ -197,12 +211,12 @@ const CardOrdersTable = () => {
               >
                 <FontAwesomeIcon icon={solid("pen-to-square")} />
               </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => deleteOrder(rowItemUuid)}
-              >
-                <FontAwesomeIcon icon={solid("trash-can")} />
-              </button>
+              {/*<button*/}
+              {/*  className="btn btn-danger"*/}
+              {/*  onClick={() => deleteOrder(rowItemUuid)}*/}
+              {/*>*/}
+              {/*  <FontAwesomeIcon icon={solid("trash-can")} />*/}
+              {/*</button>*/}
             </div>
           );
         },
@@ -211,44 +225,38 @@ const CardOrdersTable = () => {
     [statuses] // DO NOT UPDATE THIS DEPENDENCY
   );
 
-  function deleteOrder(orderUuid) {
-    const result = window.confirm(
-      "Bạn có chắc chắn muốn xóa đơn hàng này? Dữ liệu này sẽ bị xóa VĨNH VIỄN!"
-    );
-
-    if (result) {
-      apiClient.get("/sanctum/csrf-cookie").then(() => {
-        const userToken = JSON.parse(
-          localStorage.getItem("personalAccessToken")
-        );
-
-        apiClient
-          .delete(`api/admin/order/${orderUuid}`, {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${userToken}`,
-            },
-          })
-          .then((response) => {
-            alert(response.data.message);
-            navigate(0);
-          })
-          .catch((error) => {
-            alert(error.response.data.message);
-          });
-      });
-    }
-  }
+  // function deleteOrder(orderUuid) {
+  //   const result = window.confirm(
+  //     "Bạn có chắc chắn muốn xóa đơn hàng này? Dữ liệu này sẽ bị xóa VĨNH VIỄN!"
+  //   );
+  //
+  //   if (result) {
+  //     apiClient.get("/sanctum/csrf-cookie").then(() => {
+  //       const userToken = JSON.parse(
+  //         localStorage.getItem("personalAccessToken")
+  //       );
+  //
+  //       apiClient
+  //         .delete(`api/admin/order/${orderUuid}`, {
+  //           headers: {
+  //             Accept: "application/json",
+  //             Authorization: `Bearer ${userToken}`,
+  //           },
+  //         })
+  //         .then((response) => {
+  //           alert(response.data.message);
+  //           navigate(0);
+  //         })
+  //         .catch((error) => {
+  //           alert(error.response.data.message);
+  //         });
+  //     });
+  //   }
+  // }
 
   const tableInstance = useTable({ data, columns }, useGlobalFilter);
   const { getTableProps, headerGroups, getTableBodyProps, rows, prepareRow } =
     tableInstance;
-
-  ///////////////////////////////////////
-  // Fetch Data
-
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [lastPage, setLastPage] = useState(2);
 
   const {
     currentPage,
@@ -263,40 +271,6 @@ const CardOrdersTable = () => {
   } = useAdminPagination();
 
   const { filter, filterChangeHandler } = useServerFilter(setCurrentPage);
-  // const fetchOrders = useCallback(async () => {
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const response = await apiClient.get(
-  //       `api/admin/order?page=${currentPage}&filter=${
-  //         filter.length > 3 ? filter : ""
-  //       }`,
-  //       {
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${userToken}`,
-  //         },
-  //       }
-  //     );
-  //     // console.log(response.data.data);
-  //     setLastPage(response.data.last_page);
-  //     const transformedOrders = response.data.data.map((order) => {
-  //       return new OrderInTable(
-  //         order.uuid,
-  //         order.receiver_name,
-  //         order.receiver_phone_number,
-  //         order.receiver_address,
-  //         order.status_id,
-  //         order.payment_details.status,
-  //         order.total
-  //       );
-  //     });
-  //     setData(transformedOrders);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, [currentPage, filter, setLastPage]);
 
   const transformOrderResponse = (response) => {
     setLastPage(response.data.last_page);
@@ -341,12 +315,14 @@ const CardOrdersTable = () => {
       setStatuses(response.data);
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   }, []);
+
+  useDebounce(fetchOrders, filter);
   useEffect(() => {
-    fetchOrders();
     fetchOrderStatuses();
-  }, [fetchOrderStatuses, fetchOrders]);
+  }, [fetchOrderStatuses]);
 
   // function copyInfoHandler(valueObj) {
   //   let readyForClipboard = "";
@@ -400,6 +376,7 @@ const CardOrdersTable = () => {
           noFoundSearchResult={noFoundSearchResult}
           colSpan={8}
           emptyMessage="Không có đơn hàng nào trong cơ sở dữ liệu"
+          filter={filter}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

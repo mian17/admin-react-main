@@ -7,7 +7,6 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
   const [hasError, setHasError] = useState(false);
   const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
 
-  console.log(apiUrl);
   const fetchData = useCallback(async () => {
     setHasError(false);
     setNoFoundSearchResult(false);
@@ -29,9 +28,11 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
         setNoFoundSearchResult(true);
 
       // console.log(transformedData);
+      // console.log(response);
+      // console.log(transformedData);
       setData(transformedData);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       setHasError(true);
       // alert("Đã có lỗi xảy ra trong quá trình tải các danh mục.");
     }

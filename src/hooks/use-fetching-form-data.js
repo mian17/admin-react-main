@@ -25,6 +25,7 @@ const useFetchingFormData = (
         },
       });
       const transformedData = functionToProcess(response);
+      console.log(transformedData);
       setData(transformedData);
       // setMessage(new Message(true, "success", ""));
     } catch (error) {

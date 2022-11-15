@@ -58,6 +58,7 @@ const InfoDetailsMainContent = () => {
       setData(transformedData);
     } catch (error) {
       console.log(error);
+      alert("Không lấy được thông tin cho các danh mục trên dashboard.");
     }
   }, []);
 

@@ -12,7 +12,6 @@ import apiClient from "../../../../../../api";
 
 import Merchant from "./productForm-utils/Merchant";
 import Warehouse from "./productForm-utils/Warehouse";
-import Category from "./productForm-utils/Category";
 import "@ckeditor/ckeditor5-build-classic/build/translations/vi";
 import FormTextAreaField from "../../../../../../common/components/FormTextAreaField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -25,6 +24,8 @@ import FormFileUploadWithPreview from "../../../../../../common/components/FormF
 import productInputSubmitHandler from "./server/productInputSubmitHandler";
 import productInputEditProductSubmitHandler from "./server/productInputEditProductSubmitHandler";
 import { useNavigate } from "react-router-dom";
+import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/processingCategoryHelpers";
+import RecursiveCategoryOptions from "../../../../../../common/components/RecursiveCategoryOptions";
 
 const ProductInputs = (props) => {
   const navigate = useNavigate();
@@ -81,14 +82,9 @@ const ProductInputs = (props) => {
         config
       );
       // console.log(categoriesResponse.data);
+      const transformedCategories =
+        recursiveChildrenCategoryAdditionForFetching(categoriesResponse);
 
-      const transformedCategories = categoriesResponse.data.map((category) => {
-        return new Category(
-          category.id,
-          category.name,
-          category["children_recursive"]
-        );
-      });
       // console.log(merchantsResponse);
       const transformedMerchants = merchantsResponse.data.map((merchant) => {
         return new Merchant(merchant.id, merchant.name);
@@ -102,6 +98,7 @@ const ProductInputs = (props) => {
       setWarehouses(transformedWarehouses);
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   }, []);
 
@@ -173,6 +170,7 @@ const ProductInputs = (props) => {
       );
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   }, [props.productId]);
 
@@ -190,18 +188,15 @@ const ProductInputs = (props) => {
 
   let categoriesOptions;
 
-  categoriesOptions = categories.map((category, i) => (
-    <React.Fragment key={i}>
-      <option key={i} value={category.id}>
-        {category.name}
-      </option>
-      {category.children.map((child) => (
-        <React.Fragment key={child.id + "0"}>
-          <option value={child.id}>{"|=== " + child.name}</option>
-        </React.Fragment>
-      ))}
-    </React.Fragment>
-  ));
+  categoriesOptions = categories.map((category, i) => {
+    return (
+      <RecursiveCategoryOptions
+        key={i}
+        category={category}
+        childrenRecursive={category.children}
+      />
+    );
+  });
   const [error, setError] = useState("");
 
   function addCategoricalInfoClickHandler(push, values) {

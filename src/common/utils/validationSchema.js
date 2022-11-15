@@ -249,6 +249,19 @@ export const CategorySchema = Yup.object().shape({
     .required("Bạn cần nhập tên danh mục mới mà bạn cần thêm"),
 });
 
+export const ImageModalInputsSchema = Yup.object().shape({
+  productId: Yup.number()
+    .positive()
+    .integer("Bạn cần chọn sản phẩm")
+    .min(0, "Bạn cần chọn sản phẩm")
+    .required("Bạn cần chọn sản phẩm"),
+  modelId: Yup.number()
+    .positive()
+    .integer("Bạn cần chọn kiểu loại của sản phẩm")
+    .min(0, "Bạn cần chọn kiểu loại của sản phẩm")
+    .required("Bạn cần chọn kiểu loại của sản phẩm"),
+});
+
 export const OrderSchema = Yup.object().shape({
   receiverName: Yup.string()
     .min(2, "Tên người nhận ngắn quá")

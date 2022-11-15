@@ -27,6 +27,7 @@ const ChatBox = (props) => {
       console.log(response);
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   }, [props.recipientUuid]); // CONSIDER TO UPDATE THIS DEPENDENCY
 
@@ -48,7 +49,9 @@ const ChatBox = (props) => {
       console.log(backendServerPath + avatar);
       setCurrentUserAvatarUrl(backendServerPath + avatar);
     } catch (error) {
+      console.log(error);
       console.log(error.response.data.message);
+      alert(error.message);
     }
   }, []);
   useEffect(() => {

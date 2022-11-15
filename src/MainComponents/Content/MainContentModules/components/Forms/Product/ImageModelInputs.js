@@ -7,6 +7,7 @@ import FormFileUploadWithMultiplePreview from "../../../../../../common/componen
 import Button from "react-bootstrap/Button";
 import imageModelInputsOnSubmit from "./server/imageModelInputsOnSubmit";
 import { useNavigate } from "react-router-dom";
+import { ImageModalInputsSchema } from "../../../../../../common/utils/validationSchema";
 
 const ImageModelInputs = ({ randomId }) => {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ const ImageModelInputs = ({ randomId }) => {
   return (
     <Formik
       initialValues={initialValues}
+      validationSchema={ImageModalInputsSchema}
       onSubmit={(values) => {
         imageModelInputsOnSubmit(values, navigate);
       }}

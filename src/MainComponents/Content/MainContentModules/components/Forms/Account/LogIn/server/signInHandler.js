@@ -33,10 +33,6 @@ export default function signInHandler(
         console.log(err);
         if (err) {
           const errorMessage = err.response.data.message;
-          // const errorArr = [];
-          // for (const property in errorsObj) {
-          //   errorArr.push(errorsObj[property]);
-          // }
           setErrors(errorMessage);
         }
         setSubmitting(false);

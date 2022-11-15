@@ -7,76 +7,9 @@ import { useNavigate } from "react-router-dom";
 import signInHandler from "./server/signInHandler";
 
 const LogIn = () => {
-  // useEffect(() => {
-  //   apiClient.get("/sanctum/csrf-cookie").then(() => {
-  //     apiClient
-  //       .post("/login", userInput)
-  //       .then((response) => {
-  //         if (response.status === 201) {
-  //           setErrors(null);
-  //           localStorage.setItem(
-  //             "personalAccessToken",
-  //             JSON.stringify(response.data.token)
-  //           );
-  //           localStorage.setItem("loggedIn", JSON.stringify(true));
-  //           setLoggedIn({
-  //             loggedIn: true,
-  //             personalAccessToken: JSON.parse(
-  //               localStorage.getItem("personalAccessToken")
-  //             ),
-  //           });
-  //           navigate("/");
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //         if (err) {
-  //           const errorMessage = err.response.data.message;
-  //           // const errorArr = [];
-  //           // for (const property in errorsObj) {
-  //           //   errorArr.push(errorsObj[property]);
-  //           // }
-  //           setErrors(errorMessage);
-  //         }
-  //       });
-  //   });
-  // });
   const [error, setError] = useState("");
   const { setLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
-  // const logInHandler = async (values) => {
-  // try {
-  //   await apiClient.get("/sanctum/csrf-cookie");
-  //
-  //   const response = await apiClient.post(
-  //     "/admin/login",
-  //     {
-  //       email: values.email,
-  //       password: values.password,
-  //     },
-  //     laravelSanctumConfig
-  //   );
-  //
-  //   if (response.status === 201) {
-  //     setError(null);
-  //     localStorage.setItem(
-  //       "personalAccessToken",
-  //       JSON.stringify(response.data.token)
-  //     );
-  //     localStorage.setItem("loggedIn", JSON.stringify(true));
-  //     setLoggedIn({
-  //       loggedIn: true,
-  //       personalAccessToken: JSON.parse(
-  //         localStorage.getItem("personalAccessToken")
-  //       ),
-  //     });
-  //     // console.log(tokenHeaderConfig);
-  //     navigate("/");
-  //   }
-  // } catch (error) {
-  //   setError(error.response.data);
-  // }
-  // };
 
   const handleSubmit = (values, { setSubmitting }) => {
     const userInput = {
@@ -153,13 +86,6 @@ const LogIn = () => {
                       </ErrorMessage>
                     </div>
                     <div className="row px-2 mb-2">
-                      {/*<div className="col-7">*/}
-                      {/*  <div className="icheck-primary text-left">*/}
-                      {/*    <input type="checkbox" id="remember" />*/}
-                      {/*    <label htmlFor="remember">Ghi nhớ tôi</label>*/}
-                      {/*  </div>*/}
-                      {/*</div>*/}
-
                       <button
                         type="submit"
                         className="btn btn-primary btn-block"
@@ -179,15 +105,6 @@ const LogIn = () => {
                   </Form>
                 )}
               </Formik>
-
-              {/*<p className="mb-0">*/}
-              {/*  /!*<a href="/#" className="text-center">*!/*/}
-              {/*  /!*  Đăng ký tài khoản mới*!/*/}
-              {/*  /!*</a>*!/*/}
-              {/*</p>*/}
-              {/*<p className="mb-1">*/}
-              {/*  <a href="/src/pages">Quên mật khẩu</a>*/}
-              {/*</p>*/}
             </div>
           </div>
         </div>

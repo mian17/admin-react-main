@@ -1,11 +1,11 @@
 import classes from "../../MainComponents/Content/MainContentModules/components/CardTable/CardCategoryTable/CardCategoryTable.module.css";
 import { Table } from "react-bootstrap";
 
-const ReactTable = ({
+const ReactTableSpecificallyForProducts = ({
   getTableProps,
   headerGroups,
   getTableBodyProps,
-  rows,
+  page,
   prepareRow,
   isLoading,
   hasError,
@@ -52,39 +52,37 @@ const ReactTable = ({
             </td>
           </tr>
         )}
-        {noFoundSearchResult && filter.length > 0 && (
-          <tr>
-            <td style={{ textAlign: "center" }} colSpan={colSpan}>
-              Không tìm thấy thông tin nào theo đúng nhu cầu của bạn.
-            </td>
-          </tr>
-        )}
-        {rows.length === 0 && filter.length === 0 && !isLoading && !hasError && (
-          <tr>
-            <td style={{ textAlign: "center" }} colSpan={colSpan}>
-              {emptyMessage}
-            </td>
-          </tr>
-        )}
-        {rows.map((row) => {
-          prepareRow(row);
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map((cell) => {
-                return (
-                  <td
-                    className={classes["table-text-center"]}
-                    {...cell.getCellProps()}
-                  >
-                    {cell.render("Cell")}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
+        {/*{noFoundSearchResult && filter.length > 0 && (*/}
+        {/*  <tr>*/}
+        {/*    <td style={{ textAlign: "center" }} colSpan={colSpan}>*/}
+        {/*      Không tìm thấy thông tin nào theo đúng nhu cầu của bạn.*/}
+        {/*    </td>*/}
+        {/*  </tr>*/}
+        {/*)}*/}
+        {/*{rows.length === 0 && filter.length === 0 && !isLoading && !hasError && (*/}
+        {/*  <tr>*/}
+        {/*    <td style={{ textAlign: "center" }} colSpan={colSpan}>*/}
+        {/*      {emptyMessage}*/}
+        {/*    </td>*/}
+        {/*  </tr>*/}
+        {/*)}*/}
+        {page &&
+          page.map((row, i) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map((cell) => {
+                  return (
+                    <td className="text-center" {...cell.getCellProps()}>
+                      {cell.render("Cell")}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
       </tbody>
     </Table>
   );
 };
-export default ReactTable;
+export default ReactTableSpecificallyForProducts;

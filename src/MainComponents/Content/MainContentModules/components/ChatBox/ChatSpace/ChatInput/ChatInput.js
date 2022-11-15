@@ -32,6 +32,7 @@ const ChatInput = (props) => {
         })
         .catch((error) => {
           console.log(error);
+          alert(error.message);
         });
       setMessage("");
     }

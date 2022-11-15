@@ -22,7 +22,8 @@ const UserPanelItemSidebar = () => {
       // console.log(avatar, name);
       setUserInfo({ avatar: backendServerPath + avatar, name: name });
     } catch (error) {
-      console.log(error.response.data.message);
+      console.log(error);
+      alert(error.message);
     }
   }, []);
 

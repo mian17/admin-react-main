@@ -1,67 +1,43 @@
-import {useContext, useEffect, useMemo, useState} from "react";
-import {DATA as DUMP_DATA} from "./cardCategoryTable-utils/data";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { DATA as DUMP_DATA } from "./cardCategoryTable-utils/data";
 // import { COLUMNS as specifiedColumns } from "./cardCategoryTable-utils/columns";
-import {useGlobalFilter, useTable} from "react-table";
-import {Col, Row} from "react-bootstrap";
+import { useGlobalFilter, usePagination, useTable } from "react-table";
+import { Col, Row } from "react-bootstrap";
 import apiClient from "../../../../../../api";
 import Category from "./cardCategoryTable-utils/Category";
-import {backendServerPath} from "../../../../../../utilities/backendServerPath";
-
-import classes from "./CardCategoryTable.module.css";
 import GlobalFilter from "../../../../../../common/components/GlobalFilter";
 import ModalEditCategory from "../../Forms/Category/ModalEditCategory";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
-import {useNavigate} from "react-router-dom";
-import ReactTable from "../../../../../../common/components/ReactTable";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { useNavigate } from "react-router-dom";
 import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import MessageContext from "../../../../../../store/message-context";
 import FunctionalitiesDiv from "../../../../../../common/components/FunctionalitiesDiv";
+import ReactTableClientPagination from "../../../../../../common/components/ReactTableClientPagination";
+import AdminPagination from "../../../../../../common/components/AdminPagination";
 
-// function recursiveChildrenCategoryAddition(category, parentCategoryReadyToPush, transformedCategories) {
-//   if (category.children_recursive.length > 0) {
-//     category.children_recursive.forEach((childCategory) => {
-//       const childParentCategoryReadyToPush = new Category(
-//         childCategory.id,
-//         childCategory.name,
-//         backendServerPath + childCategory.img_url,
-//         parentCategoryReadyToPush.name
-//       );
-//       transformedCategories.push(childParentCategoryReadyToPush);
-//
-//       if (childCategory.children_recursive.length > 0) {
-//         childCategory.children_recursive.forEach((childChildCategory) => {
-//           const childChildParentCategoryReadyToPush = new Category(
-//             childChildCategory.id,
-//             childChildCategory.name,
-//             backendServerPath + childChildCategory.img_url,
-//             childParentCategoryReadyToPush.name
-//           );
-//           transformedCategories.push(childChildParentCategoryReadyToPush);
-//         });
-//       }
-//     });
-//   }
-// }
 function recursiveChildrenCategoryAddition(
   category,
   parentCategoryReadyToPush,
-  transformedCategories
+  transformedCategories,
+  level,
+  pattern
 ) {
+  level++;
   category.children_recursive.forEach((childCategory) => {
     const childParentCategoryReadyToPush = new Category(
       childCategory.id,
-      childCategory.name,
-      backendServerPath + childCategory.img_url,
-      parentCategoryReadyToPush.name
+      `${pattern.repeat(level)} ${childCategory.name}`
     );
     transformedCategories.push(childParentCategoryReadyToPush);
 
     recursiveChildrenCategoryAddition(
       childCategory,
       childParentCategoryReadyToPush,
-      transformedCategories
+      transformedCategories,
+      level,
+      pattern
     );
   });
 }
@@ -77,25 +53,29 @@ const CardCategoryTable = () => {
         Header: "Id",
         accessor: "id",
       },
-      {
-        Header: "Hình ảnh",
-        accessor: "img",
-        Cell: ({ cell: { value } }) => {
-          return (
-            <div className={classes["category-img"]}>
-              <img className={classes["category-img"]} src={value} alt="" />
-            </div>
-          );
-        },
-      },
+      // {
+      //   Header: "Hình ảnh",
+      //   accessor: "img",
+      //   Cell: ({ cell: { value } }) => {
+      //     return (
+      //       <div className={classes["category-img"]}>
+      //         <img className={classes["category-img"]} src={value} alt="" />
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         Header: "Tên danh mục",
         accessor: "name",
+        Cell: ({ cell }) => {
+          const categoryName = cell.row.values.name;
+          return <div className="text-left">{categoryName}</div>;
+        },
       },
-      {
-        Header: "Danh mục cha",
-        accessor: "parentCategory",
-      },
+      // {
+      //   Header: "Danh mục cha",
+      //   accessor: "parentCategory",
+      // },
       {
         Header: "Chức năng",
         accessor: "functions",
@@ -157,6 +137,7 @@ const CardCategoryTable = () => {
               navigate(0);
             })
             .catch((error) => {
+              console.log(error);
               alert(error.response.data.message);
             });
         });
@@ -164,10 +145,11 @@ const CardCategoryTable = () => {
     };
   };
 
-  const tableInstance = useTable({ data, columns }, useGlobalFilter);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [hasError, setHasError] = useState(false);
-  // const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
+  const tableInstance = useTable(
+    { data, columns },
+    useGlobalFilter,
+    usePagination
+  );
 
   const recursiveChildrenCategoryAdditionForFetching = (categoriesResponse) => {
     let transformedCategories = [];
@@ -175,15 +157,16 @@ const CardCategoryTable = () => {
     categoriesResponse.data.forEach((category) => {
       const parentCategoryReadyToPush = new Category(
         category.id,
-        category.name,
-        backendServerPath + category.img_url
+        category.name
       );
       transformedCategories.push(parentCategoryReadyToPush);
 
       recursiveChildrenCategoryAddition(
         category,
         parentCategoryReadyToPush,
-        transformedCategories
+        transformedCategories,
+        0,
+        "||==="
       );
     });
     return transformedCategories;
@@ -200,44 +183,6 @@ const CardCategoryTable = () => {
     recursiveChildrenCategoryAdditionForFetching
   );
 
-  // const fetchCategories = useCallback(async () => {
-  //   setNoFoundSearchResult(false);
-  //   setIsLoading(true);
-  //   setData([]);
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const categoriesResponse = await apiClient.get("api/admin/category", {
-  //       headers: {
-  //         Accept: "application/json",
-  //         Authorization: `Bearer ${userToken}`,
-  //       },
-  //     });
-  //     let transformedCategories = [];
-  //
-  //     categoriesResponse.data.forEach((category) => {
-  //       const parentCategoryReadyToPush = new Category(
-  //         category.id,
-  //         category.name,
-  //         backendServerPath + category.img_url
-  //       );
-  //       transformedCategories.push(parentCategoryReadyToPush);
-  //
-  //       recursiveChildrenCategoryAddition(
-  //         category,
-  //         parentCategoryReadyToPush,
-  //         transformedCategories
-  //       );
-  //     });
-  //
-  //     setData(transformedCategories);
-  //   } catch (error) {
-  //     console.log(error);
-  //     setHasError(true);
-  //     // alert("Đã có lỗi xảy ra trong quá trình tải các danh mục.");
-  //   }
-  //   setIsLoading(false);
-  // }, []);
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -246,35 +191,80 @@ const CardCategoryTable = () => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,
+    page,
+
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    // pageOptions,
+    gotoPage,
+    pageCount,
     prepareRow,
     state,
     setGlobalFilter,
   } = tableInstance;
 
-  const { globalFilter } = state;
+  const { globalFilter, pageIndex } = state;
 
+  const previousPageHandler = () => {
+    previousPage();
+  };
+  const firstPageHandler = () => {
+    gotoPage(0);
+  };
+  const nextPageHandler = () => {
+    nextPage();
+  };
+  const lastPageHandler = () => {
+    gotoPage(pageCount - 1);
+  };
+  const changePageOnClickedValue = (e) => {
+    gotoPage(e.target.value - 1);
+  };
   return (
     <div className="card">
       <div className="card-header bg-secondary">
         <h3 className="card-title">Danh sách danh mục</h3>
       </div>
       <div className="card-body">
-        <Row className="mb-3 text-right">
+        <Row className="mb-3 ">
           <Col>
+            {/*<ClientSidePagination*/}
+            {/*  previousPage={previousPage}*/}
+            {/*  canPreviousPage={canPreviousPage}*/}
+            {/*  pageIndex={pageIndex}*/}
+            {/*  pageOptions={pageOptions}*/}
+            {/*  nextPage={nextPage}*/}
+            {/*  canNextPage={canNextPage}*/}
+            {/*/>*/}
+          </Col>
+          <Col className="text-right">
             <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           </Col>
         </Row>
-        <ReactTable
+
+        <ReactTableClientPagination
           getTableProps={getTableProps}
           headerGroups={headerGroups}
           getTableBodyProps={getTableBodyProps}
-          rows={rows}
+          page={page}
           prepareRow={prepareRow}
           isLoading={isLoading}
           hasError={hasError}
           noFoundSearchResult={noFoundSearchResult}
           colSpan={5}
+          filter={globalFilter}
+          emptyMessage="Danh mục bạn cầm tìm không có trong cơ sở dữ liệu"
+        />
+        <AdminPagination
+          previousPageHandler={previousPageHandler}
+          firstPageHandler={firstPageHandler}
+          nextPageHandler={nextPageHandler}
+          lastPageHandler={lastPageHandler}
+          changePageOnClickedValue={changePageOnClickedValue}
+          currentPage={pageIndex + 1}
+          lastPage={pageCount}
         />
       </div>
       <ModalEditCategory

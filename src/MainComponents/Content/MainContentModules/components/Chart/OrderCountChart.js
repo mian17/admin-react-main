@@ -100,6 +100,7 @@ const OrderCountChart = () => {
       });
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   }, [selectedYear]);
 

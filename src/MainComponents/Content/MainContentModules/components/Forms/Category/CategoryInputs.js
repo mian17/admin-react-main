@@ -6,13 +6,14 @@ import FormFileUploadWithPreview from "../../../../../../common/components/FormF
 import { CategorySchema } from "../../../../../../common/utils/validationSchema";
 import Button from "react-bootstrap/Button";
 import FormSelectField from "../../../../../../common/components/FormSelectField";
-import CategoryForTable from "./categoryForm-utils/CategoryForTable";
 import { useNavigate } from "react-router-dom";
 import Category from "./categoryForm-utils/Category";
 import categoryInputsSubmitHandler from "./server/categoryInputsSubmitHandler";
 import LoadingSpinner from "../../../../../../common/components/LoadingSpinner";
 import MessageContext from "../../../../../../store/message-context";
 import useFetchingFormData from "../../../../../../hooks/use-fetching-form-data";
+import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/processingCategoryHelpers";
+import RecursiveCategoryOptions from "../../../../../../common/components/RecursiveCategoryOptions";
 
 const CategoryInputs = ({ randomId, categoryId }) => {
   const navigate = useNavigate();
@@ -22,51 +23,12 @@ const CategoryInputs = ({ randomId, categoryId }) => {
   );
   const [categories, setCategories] = useState([]);
 
-  function transformCategories(response) {
-    return response.data.map((category) => {
-      return new CategoryForTable(
-        category.id,
-        category.name,
-        category["children_recursive"]
-      );
-    });
-  }
-
   const { fetchData: fetchCategories } = useFetchingFormData(
     "api/admin/category",
     setCategories,
-    transformCategories,
+    recursiveChildrenCategoryAdditionForFetching,
     "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
   );
-  // const fetchCategories = useCallback(async () => {
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const categoriesResponse = await apiClient.get("api/admin/category", {
-  //       headers: {
-  //         Accept: "application/json",
-  //         Authorization: `Bearer ${userToken}`,
-  //       },
-  //     });
-  //     const transformedCategories = categoriesResponse.data.map((category) => {
-  //       return new CategoryForTable(
-  //         category.id,
-  //         category.name,
-  //         category["children_recursive"]
-  //       );
-  //     });
-  //     setCategories(transformedCategories);
-  //   } catch (error) {
-  //     console.log(error);
-  //     setMessage(
-  //       new Message(
-  //         true,
-  //         "danger",
-  //         "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
-  //       )
-  //     );
-  //   }
-  // }, []);
 
   function transformCurrentEditingCategoryId(response) {
     const { name, img_url, parent_category_id } = response.data;
@@ -129,18 +91,16 @@ const CategoryInputs = ({ randomId, categoryId }) => {
 
   let categoryOptions;
 
-  categoryOptions = categories.map((category, i) => (
-    <React.Fragment key={i}>
-      <option key={i} value={category.id}>
-        {category.name}
-      </option>
-      {category.children.map((child) => (
-        <React.Fragment key={child.id + "0"}>
-          <option value={child.id}>{"|=== " + child.name}</option>
-        </React.Fragment>
-      ))}
-    </React.Fragment>
-  ));
+  categoryOptions = categories.map((category, i) => {
+    return (
+      <RecursiveCategoryOptions
+        key={i}
+        category={category}
+        childrenRecursive={category.children}
+      />
+    );
+  });
+
   return (
     <Formik
       initialValues={initialFormValue}

@@ -62,6 +62,7 @@ const ModalUserDetails = (props) => {
       setOrders(orders);
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
     setIsLoading(false);
   }, [
