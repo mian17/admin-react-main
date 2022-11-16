@@ -13,7 +13,7 @@ import useAdminPagination from "../../../../../../hooks/use-admin-pagination";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import ReactTable from "../../../../../../common/components/ReactTable";
 import AdminPagination from "../../../../../../common/components/AdminPagination";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 import {createIndeterminateCheckboxes} from "../../../../../../common/utils/helperFunctions";
 import TooltipButton from "../../../../../../common/components/TooltipButton";
 import {confirm} from "react-confirm-box";
@@ -201,7 +201,7 @@ export default function TrashModel(props) {
     filter
   );
 
-  useDebounce(fetchProductsInTrash, filter);
+  useDebounceForSearchBox(fetchProductsInTrash, filter);
 
   const tableInstance = useTable(
     { columns, data },

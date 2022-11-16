@@ -26,7 +26,7 @@ import FunctionalitiesDiv from "../../../../../../common/components/Functionalit
 import useModal from "../../../../../../hooks/use-modal";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 
 const CardWarehouseTable = () => {
   const [data, setData] = useState(useMemo(() => [], []));
@@ -115,7 +115,7 @@ const CardWarehouseTable = () => {
     transformWarehouses,
     filter
   );
-  useDebounce(fetchWarehouses, filter);
+  useDebounceForSearchBox(fetchWarehouses, filter);
 
   const headers = [
     { label: "Id", key: "id" },

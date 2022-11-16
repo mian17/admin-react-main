@@ -12,7 +12,7 @@ import categoryInputsSubmitHandler from "./server/categoryInputsSubmitHandler";
 import LoadingSpinner from "../../../../../../common/components/LoadingSpinner";
 import MessageContext from "../../../../../../store/message-context";
 import useFetchingFormData from "../../../../../../hooks/use-fetching-form-data";
-import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/processingCategoryHelpers";
+import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/recursiveChildrenCategoryAdditionForFetching";
 import RecursiveCategoryOptions from "../../../../../../common/components/RecursiveCategoryOptions";
 
 const CategoryInputs = ({ randomId, categoryId }) => {
@@ -32,7 +32,6 @@ const CategoryInputs = ({ randomId, categoryId }) => {
 
   function transformCurrentEditingCategoryId(response) {
     const { name, img_url, parent_category_id } = response.data;
-
     return new Category(
       name,
       parent_category_id === null ? "" : parent_category_id.toString(),
@@ -46,41 +45,6 @@ const CategoryInputs = ({ randomId, categoryId }) => {
     transformCurrentEditingCategoryId,
     "Không lấy được thông tin danh mục mà bạn cần chỉnh sửa! Bạn hãy thử refresh lại trang."
   );
-  // const fetchCurrentEditingCategoryId = useCallback(async () => {
-  //   try {
-  //     const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
-  //     await apiClient.get("/sanctum/csrf-cookie");
-  //     const currentEditingCategoryResponse = await apiClient.get(
-  //       `api/admin/category/${categoryId}`,
-  //       {
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${userToken}`,
-  //         },
-  //       }
-  //     );
-  //     // console.log(currentEditingCategoryResponse.data);
-  //     const { name, img_url, parent_category_id } =
-  //       currentEditingCategoryResponse.data;
-  //
-  //     setInitialFormValue(
-  //       new Category(
-  //         name,
-  //         parent_category_id === null ? "" : parent_category_id.toString(),
-  //         img_url
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.log(error);
-  //     setMessage(
-  //       new Message(
-  //         true,
-  //         "danger",
-  //         "Không lấy được thông tin danh mục cần chỉnh sửa! Bạn hãy thử refresh lại trang."
-  //       )
-  //     );
-  //   }
-  // }, [categoryId]);
 
   useEffect(() => {
     fetchCategories();

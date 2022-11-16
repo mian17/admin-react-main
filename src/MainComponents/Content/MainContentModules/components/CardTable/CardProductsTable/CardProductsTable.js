@@ -12,7 +12,10 @@ import {
 // import IndeterminateCheckbox from "../../../../../../common/components/IndeterminateCheckbox";
 import { productsInTableRows } from "./cardProductsTable-test-data/productsInTable-rows";
 import { confirm } from "react-confirm-box";
-import { confirmBoxOptions } from "../../../../../../common/utils/options";
+import {
+  confirmBoxOptions,
+  confirmBoxOptionsForMovingProductsToAnotherCategory,
+} from "../../../../../../common/utils/options";
 import Button from "react-bootstrap/Button";
 
 import ModalEditProduct from "../../Forms/Product/ModalEditProduct";
@@ -33,8 +36,12 @@ import useModal from "../../../../../../hooks/use-modal";
 import useFetchingTableData from "../../../../../../hooks/use-fetching-table-data";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 import TooltipButton from "../../../../../../common/components/TooltipButton";
+import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/recursiveChildrenCategoryAdditionForFetching";
+import TooltipButtonWithDropdown from "../../../../../../common/components/TooltipButtonWithDropdown";
+import useFetchingFormData from "../../../../../../hooks/use-fetching-form-data";
+import useDebounce from "../../../../../../hooks/use-debounce";
 
 const CardProductsTable = () => {
   const navigate = useNavigate();
@@ -186,7 +193,7 @@ const CardProductsTable = () => {
 
   const [columnState, setColumnState] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
-  // console.log(state.sortBy);
+
   useEffect(() => {
     if (state.sortBy.length > 0) {
       const { id: column, desc } = state.sortBy[0];
@@ -210,7 +217,7 @@ const CardProductsTable = () => {
     filter
   );
 
-  useDebounce(fetchProducts, filter);
+  useDebounceForSearchBox(fetchProducts, filter);
 
   function copyInfoHandler(valueObj) {
     let readyForClipboard = "";
@@ -309,6 +316,62 @@ const CardProductsTable = () => {
     { label: "Danh mục", key: "category" },
     // { label: "Nhà bán", key: "category" },
   ];
+
+  const [categories, setCategories] = useState([]);
+
+  const { fetchData: fetchCategories } = useFetchingFormData(
+    "api/admin/category",
+    setCategories,
+    recursiveChildrenCategoryAdditionForFetching,
+    "Không lấy được danh sách các danh mục sản phẩm cho form! Bạn hãy thử refresh lại trang."
+  );
+
+  useDebounce(fetchCategories);
+
+  const moveToAnotherCategory = async (e) => {
+    const selectedCategoryId = +e.target.getAttribute("value");
+
+    const selectedCategory = categories.find(
+      (category) => category.id === selectedCategoryId
+    );
+    const trimmedCategoryName = selectedCategory.name.replace(/\|\|===/g, "");
+
+    const result = await confirm(
+      `Bạn muốn di chuyển các sản phẩm này sang danh mục ${trimmedCategoryName} không?`,
+      confirmBoxOptionsForMovingProductsToAnotherCategory
+    );
+    if (result) {
+      console.log("user clicked yes");
+      apiClient.get("/sanctum/csrf-cookie").then(() => {
+        const userToken = JSON.parse(
+          localStorage.getItem("personalAccessToken")
+        );
+        apiClient
+          .post(
+            `api/admin/update-multiple-products-to-another-category/`,
+            {
+              update_category_products_id: selectedRowsProductIds,
+              update_to_category_id: selectedCategoryId,
+            },
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${userToken}`,
+              },
+            }
+          )
+          .then((response) => {
+            console.log(response);
+            alert(response.data.message);
+            navigate(0);
+          })
+          .catch((error) => {
+            console.log(error);
+            alert(error.message);
+          });
+      });
+    }
+  };
   return (
     <div className="card">
       <div className="card-header bg-secondary">
@@ -330,12 +393,21 @@ const CardProductsTable = () => {
             )}
 
             {selectedRowsProductIds && selectedRowsProductIds.length > 0 && (
-              <TooltipButton
-                fontAwesomeIcon={solid("trash-can")}
-                functionToProcessOnClick={deleteBulkInfoHandler}
-                title="Di chuyển vào thùng rác"
-                bootstrapVariant="danger"
-              />
+              <div className="d-flex" style={{ gap: 4 }}>
+                <TooltipButton
+                  fontAwesomeIcon={solid("trash-can")}
+                  functionToProcessOnClick={deleteBulkInfoHandler}
+                  title="Di chuyển vào thùng rác"
+                  bootstrapVariant="danger"
+                />
+                <TooltipButtonWithDropdown
+                  fontAwesomeIcon={solid("arrow-right-to-bracket")}
+                  functionToProcessOnClick={moveToAnotherCategory}
+                  title="Di chuyển sang danh mục khác"
+                  bootstrapVariant="warning"
+                  items={categories}
+                />
+              </div>
             )}
           </div>
           <div className="col-md-6 text-right">

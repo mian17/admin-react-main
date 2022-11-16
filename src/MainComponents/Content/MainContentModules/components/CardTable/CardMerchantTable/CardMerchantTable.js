@@ -27,7 +27,7 @@ import useFetchingTableData from "../../../../../../hooks/use-fetching-table-dat
 import useModal from "../../../../../../hooks/use-modal";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 
 const CardMerchantTable = () => {
   const navigate = useNavigate();
@@ -114,7 +114,7 @@ const CardMerchantTable = () => {
     transformMerchants,
     filter
   );
-  useDebounce(fetchMerchants, filter);
+  useDebounceForSearchBox(fetchMerchants, filter);
 
   const headers = [
     { label: "Id", key: "id" },

@@ -1,6 +1,29 @@
 import CategoryForTable from "../../MainComponents/Content/MainContentModules/components/Forms/Category/categoryForm-utils/CategoryForTable";
 
-export function recursiveChildrenCategoryAddition(
+export const recursiveChildrenCategoryAdditionForFetching = (
+  categoriesResponse
+) => {
+  let transformedCategories = [];
+
+  categoriesResponse.data.forEach((category) => {
+    const parentCategoryReadyToPush = new CategoryForTable(
+      category.id,
+      category.name
+    );
+    transformedCategories.push(parentCategoryReadyToPush);
+
+    recursiveChildrenCategoryAddition(
+      category,
+      parentCategoryReadyToPush,
+      transformedCategories,
+      0,
+      "||==="
+    );
+  });
+  return transformedCategories;
+};
+
+function recursiveChildrenCategoryAddition(
   category,
   parentCategoryReadyToPush,
   transformedCategories,
@@ -24,25 +47,3 @@ export function recursiveChildrenCategoryAddition(
     );
   });
 }
-export const recursiveChildrenCategoryAdditionForFetching = (
-  categoriesResponse
-) => {
-  let transformedCategories = [];
-
-  categoriesResponse.data.forEach((category) => {
-    const parentCategoryReadyToPush = new CategoryForTable(
-      category.id,
-      category.name
-    );
-    transformedCategories.push(parentCategoryReadyToPush);
-
-    recursiveChildrenCategoryAddition(
-      category,
-      parentCategoryReadyToPush,
-      transformedCategories,
-      0,
-      "||==="
-    );
-  });
-  return transformedCategories;
-};

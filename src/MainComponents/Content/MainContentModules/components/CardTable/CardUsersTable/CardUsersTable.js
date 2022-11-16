@@ -26,7 +26,7 @@ import FunctionalitiesDiv from "../../../../../../common/components/Functionalit
 import useModal from "../../../../../../hooks/use-modal";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 
 const CardUsersTable = () => {
   const { show, setShow, handleShow, handleClose } = useModal();
@@ -306,7 +306,7 @@ const CardUsersTable = () => {
   );
   // console.table(filter, hasError);
 
-  useDebounce(fetchUsers, filter);
+  useDebounceForSearchBox(fetchUsers, filter);
 
   return (
     <div className="card">

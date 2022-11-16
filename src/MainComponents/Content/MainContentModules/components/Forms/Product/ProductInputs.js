@@ -24,7 +24,7 @@ import FormFileUploadWithPreview from "../../../../../../common/components/FormF
 import productInputSubmitHandler from "./server/productInputSubmitHandler";
 import productInputEditProductSubmitHandler from "./server/productInputEditProductSubmitHandler";
 import { useNavigate } from "react-router-dom";
-import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/processingCategoryHelpers";
+import { recursiveChildrenCategoryAdditionForFetching } from "../../../../../../common/utils/recursiveChildrenCategoryAdditionForFetching";
 import RecursiveCategoryOptions from "../../../../../../common/components/RecursiveCategoryOptions";
 
 const ProductInputs = (props) => {

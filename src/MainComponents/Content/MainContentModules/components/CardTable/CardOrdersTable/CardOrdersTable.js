@@ -15,7 +15,7 @@ import useFetchingTableData from "../../../../../../hooks/use-fetching-table-dat
 import LinearProgress from "../../../../../../common/components/LinearProgress";
 import ServerFilter from "../../../../../../common/components/ServerFilter";
 import useServerFilter from "../../../../../../hooks/use-server-filter";
-import useDebounce from "../../../../../../hooks/use-debounce";
+import useDebounceForSearchBox from "../../../../../../hooks/use-debounce-for-search-box";
 
 // const CardOrdersTableMessage = (props) => {
 //   return (
@@ -319,7 +319,7 @@ const CardOrdersTable = () => {
     }
   }, []);
 
-  useDebounce(fetchOrders, filter);
+  useDebounceForSearchBox(fetchOrders, filter);
   useEffect(() => {
     fetchOrderStatuses();
   }, [fetchOrderStatuses]);
