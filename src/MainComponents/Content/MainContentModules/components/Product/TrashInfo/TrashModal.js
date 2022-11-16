@@ -246,7 +246,8 @@ export default function TrashModel(props) {
           )
           .then((response) => {
             console.log(response);
-            // navigate(0);
+            alert(response.data.message);
+            navigate(0);
           })
           .catch((error) => {
             console.log(error);

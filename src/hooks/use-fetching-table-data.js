@@ -7,6 +7,7 @@ const useFetchingTableData = (apiUrl, setData, functionToProcess, filter) => {
   const [hasError, setHasError] = useState(false);
   const [noFoundSearchResult, setNoFoundSearchResult] = useState(false);
 
+  console.log(apiUrl);
   const fetchData = useCallback(async () => {
     setHasError(false);
     setNoFoundSearchResult(false);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import {
@@ -73,6 +73,7 @@ const CardProductsTable = () => {
             <img className={classes["product-img"]} src={value} alt="" />
           </div>
         ),
+        disableSortBy: true,
       },
       {
         Header: "Tên sản phẩm",
@@ -104,6 +105,7 @@ const CardProductsTable = () => {
       {
         Header: "Chức năng",
         accessor: "functions",
+        disableSortBy: true,
 
         Cell: ({ cell }) => {
           const rowValues = cell.row.values;
@@ -136,19 +138,44 @@ const CardProductsTable = () => {
     ],
     []
   );
+  const tableInstance = useTable(
+    {
+      columns,
+      data,
+      // manualPagination: true,
+      manualSortBy: true,
+      // enableSorting: true,
+      // manualSorting: true,
+    },
+    useGlobalFilter,
+    useGroupBy,
+    useSortBy,
+    useExpanded,
+    useRowSelect,
+    createIndeterminateCheckboxes
+  );
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    selectedFlatRows,
+
+    state,
+  } = tableInstance;
 
   function transformProductResponse(response) {
     setLastPage(response.data.last_page);
     return response.data.data.map((product) => {
-      const productQuantity = product.kinds.reduce((prevVal, kind) => {
-        return prevVal + kind.quantity;
-      }, 0);
-
+      // const productQuantity = product.kinds.reduce((prevVal, kind) => {
+      //   return prevVal + kind.quantity;
+      // }, 0);
       return new ProductInTable(
         product.id,
         backendServerPath + product.kinds[0].image_1,
         product.name,
-        productQuantity,
+        product.kinds_sum_quantity,
         product.price,
         product.status,
         product.category.name,
@@ -157,13 +184,27 @@ const CardProductsTable = () => {
     });
   }
 
+  const [columnState, setColumnState] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+  // console.log(state.sortBy);
+  useEffect(() => {
+    if (state.sortBy.length > 0) {
+      const { id: column, desc } = state.sortBy[0];
+      setColumnState(column);
+      setSortDirection(desc ? "desc" : "asc");
+    }
+  }, [state]);
+
+  // console.log(column, desc);
   const {
     isLoading,
     hasError,
     noFoundSearchResult,
     fetchData: fetchProducts,
   } = useFetchingTableData(
-    `api/admin/product?page=${currentPage}&filter=${filter}`,
+    `api/admin/product?page=${currentPage}&filter=${filter}&column=${
+      columnState === undefined ? "" : columnState
+    }&direction=${sortDirection === undefined ? "" : sortDirection}`,
     setData,
     transformProductResponse,
     filter
@@ -219,25 +260,6 @@ const CardProductsTable = () => {
       });
     }
   }
-
-  const tableInstance = useTable(
-    { columns, data },
-    useGlobalFilter,
-    useGroupBy,
-    useSortBy,
-    useExpanded,
-    useRowSelect,
-
-    createIndeterminateCheckboxes
-  );
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    selectedFlatRows,
-  } = tableInstance;
 
   const selectedRowsProductIds = selectedFlatRows.map((row) => row.original.id);
 
@@ -324,61 +346,6 @@ const CardProductsTable = () => {
             />
           </div>
         </div>
-        {/*Old table with indeterminate selection and sort by clicking table head*/}
-
-        {/*<table*/}
-        {/*  {...getTableProps()}*/}
-        {/*  className="table table-bordered table-hover"*/}
-        {/*>*/}
-        {/*  <thead>*/}
-        {/*    {headerGroups.map((headerGroup) => (*/}
-        {/*      <tr {...headerGroup.getHeaderGroupProps()}>*/}
-        {/*        {headerGroup.headers.map((column) => (*/}
-        {/*          <th*/}
-        {/*            {...column.getHeaderProps(column.getSortByToggleProps())}*/}
-        {/*            {...column.getHeaderProps()}*/}
-        {/*          >*/}
-        {/*            {column.render("Header")}*/}
-        {/*            <span>*/}
-        {/*              {column.isSorted ? (*/}
-        {/*                column.isSortedDesc ? (*/}
-        {/*                  <FontAwesomeIcon icon={solid("arrow-down")} />*/}
-        {/*                ) : (*/}
-        {/*                  <FontAwesomeIcon icon={solid("arrow-up")} />*/}
-        {/*                )*/}
-        {/*              ) : (*/}
-        {/*                ""*/}
-        {/*              )}*/}
-        {/*            </span>*/}
-        {/*          </th>*/}
-        {/*        ))}*/}
-        {/*      </tr>*/}
-        {/*    ))}*/}
-        {/*  </thead>*/}
-
-        {/*  <tbody {...getTableBodyProps()}>*/}
-        {/*    {rows.map((row) => {*/}
-        {/*      prepareRow(row);*/}
-        {/*      return (*/}
-        {/*        <tr {...row.getRowProps()}>*/}
-        {/*          {row.cells.map((cell) => {*/}
-        {/*            return (*/}
-        {/*              <td {...cell.getCellProps()}>{cell.render("Cell")}</td>*/}
-        {/*            );*/}
-        {/*          })}*/}
-        {/*        </tr>*/}
-        {/*      );*/}
-        {/*    })}*/}
-        {/*  </tbody>*/}
-        {/*</table>*/}
-        <pre>
-          {JSON.stringify(
-            { selectedFlatRows: selectedFlatRows.map((row) => row.original) },
-            null,
-            2
-          )}
-        </pre>
-
         <ReactTable
           getTableProps={getTableProps}
           headerGroups={headerGroups}
@@ -391,6 +358,7 @@ const CardProductsTable = () => {
           colSpan={9}
           emptyMessage="Không có sản phẩm nào trong cơ sở dữ liệu"
           filter={filter}
+          enableSort={true}
         />
         <AdminPagination
           firstPageHandler={firstPageHandler}

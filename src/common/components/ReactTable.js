@@ -1,5 +1,7 @@
 import classes from "../../MainComponents/Content/MainContentModules/components/CardTable/CardCategoryTable/CardCategoryTable.module.css";
 import { Table } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 const ReactTable = ({
   getTableProps,
@@ -13,6 +15,7 @@ const ReactTable = ({
   colSpan = 6,
   emptyMessage,
   filter = "",
+  enableSort = false,
 }) => {
   return (
     <Table
@@ -29,9 +32,25 @@ const ReactTable = ({
             {headerGroup.headers.map((column) => (
               <th
                 className={classes["sticky-table-header"]}
-                {...column.getHeaderProps()}
+                {...column.getHeaderProps(
+                  enableSort && column.getSortByToggleProps()
+                )}
               >
                 {column.render("Header")}
+                {enableSort && (
+                  <span>
+                    {" "}
+                    {column.isSorted ? (
+                      column.isSortedDesc ? (
+                        <FontAwesomeIcon icon={solid("arrow-down")} />
+                      ) : (
+                        <FontAwesomeIcon icon={solid("arrow-up")} />
+                      )
+                    ) : (
+                      ""
+                    )}
+                  </span>
+                )}
               </th>
             ))}
           </tr>
