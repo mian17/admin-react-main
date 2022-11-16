@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import apiClient from "../../../../api";
 import { backendServerPath } from "../../../../utilities/backendServerPath";
+import AuthContext from "../../../../store/auth-context";
 
 const UserPanelItemSidebar = () => {
   const [userInfo, setUserInfo] = useState({ avatar: "", name: "" });
-
+  const { setLoggedOut } = useContext(AuthContext);
   const fetchUserInfo = useCallback(async () => {
     try {
       const userToken = JSON.parse(localStorage.getItem("personalAccessToken"));
@@ -24,6 +25,7 @@ const UserPanelItemSidebar = () => {
     } catch (error) {
       console.log(error);
       alert(error.message);
+      setLoggedOut();
     }
   }, []);
 

@@ -28,6 +28,7 @@
     "react-csv": "^2.2.2",
     "react-datepicker": "^4.7.0",
     "react-dom": "^18.1.0",
+    "react-idle-timer": "^5.4.2",
     "react-onclickoutside": "^6.12.1",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",

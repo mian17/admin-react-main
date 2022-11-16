@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 // Source imports
 import AuthContext from "./auth-context";
+import { useIdleTimer } from "react-idle-timer";
 
 const authDefaultState = {
   loggedIn: localStorage.getItem("loggedIn")
@@ -17,6 +18,7 @@ const AuthProvider = (props) => {
   // HANDLERS
   const setLoggedInHandler = (loggedInState) => {
     setAuthState(loggedInState);
+    start();
   };
   const setLoggedOutHandler = () => {
     // console.log("clicked");
@@ -28,11 +30,32 @@ const AuthProvider = (props) => {
     });
   };
 
+  const onIdle = () => {
+    if (authState.loggedIn) {
+      console.log(getRemainingTime());
+      if (getRemainingTime() === 0) {
+        setLoggedOutHandler();
+      }
+    }
+  };
+
+  const onActive = () => {
+    if (authState.loggedIn) {
+      reset();
+    }
+  };
+
+  const { start, reset, getRemainingTime } = useIdleTimer({
+    timeout: 1000 * 60 * 30,
+    onIdle,
+    onActive,
+    startOnMount: true,
+    startManually: true,
+    crossTab: true,
+  });
+
   useEffect(() => {
     if (localStorage.getItem("personalAccessToken") !== null) {
-      // console.log("ran");
-      // console.log(localStorage.getItem("personalAccessToken"));
-      // console.log(authState);
       setAuthState({
         loggedIn: true,
         personalAccessToken: JSON.parse(
